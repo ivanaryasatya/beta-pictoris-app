@@ -90,21 +90,4 @@ function stopDummyMode() {
     logToTerminal("[SYSTEM] Switched to REAL DATA MODE. Waiting for telemetry...");
 }
 
-// Helper for Charts (Assumes charts.js structure)
-function updateChart(chartId, value) {
-    // This function assumes the charts global objects exist as window[chartId]
-    // or similar. If not, charts.js needs to expose update methods.
-    // For now, we try to find the chart instance if stored globally.
-    // Ideally, charts.js should have a global update function.
-    if (window[chartId] && window[chartId].data) {
-        const chart = window[chartId];
-        const now = new Date().toLocaleTimeString();
-        if (chart.data.labels.length > 20) {
-            chart.data.labels.shift();
-            chart.data.datasets[0].data.shift();
-        }
-        chart.data.labels.push(now);
-        chart.data.datasets[0].data.push(value);
-        chart.update();
-    }
-}
+

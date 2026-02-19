@@ -368,6 +368,63 @@ async function disconnectComm() {
     updateConnectionUI("", [], false);
 }
 
+// FIREBASE COMMAND QUEUE
+window.sendCommandToFirebase = function (fullCmd) {
+    if (!window.firebase || !window.database) {
+        console.warn("[DEBUG] Firebase not initialized or database missing");
+        return;
+    }
+
+    console.log("[DEBUG] Processing Firebase Command:", fullCmd);
+
+    // Get Short Code
+    let encoded = encodeCommand(fullCmd);
+    let code = encoded.code;
+    let val = encoded.val;
+
+    if (!code) {
+        console.warn("[DEBUG] No Short Code found for:", fullCmd);
+        return; // Only send mapped commands
+    }
+
+    let finalCode = code;
+    if (val !== undefined && val !== null && val !== 1) { // 1 is default flag
+        finalCode = `${code}:${val}`;
+    }
+
+    const cmdRef = database.ref('/controlPanel/command');
+
+    cmdRef.transaction((currentString) => {
+        let currentData;
+        try {
+            // Attempt to parse existing string, or default to empty array
+            currentData = JSON.parse(currentString || "[]");
+        } catch (e) {
+            currentData = [];
+        }
+
+        if (!Array.isArray(currentData)) currentData = [];
+
+        // Add new command [Code, Status]
+        // Status "0" = Pending
+        currentData.push([finalCode, "0"]);
+
+        // Keep max 50
+        while (currentData.length > 50) currentData.shift();
+
+        // Return as String
+        return JSON.stringify(currentData);
+    }, (error, committed, snapshot) => {
+        if (error) {
+            console.error('Firebase Transaction failed abnormally!', error);
+        } else if (!committed) {
+            console.warn('Firebase Transaction aborted (likely conflict).');
+        } else {
+            console.log('[DEBUG] Command queued to Firebase:', finalCode);
+        }
+    });
+}
+
 // DATA INDICATORS
 let rxTimeout, txTimeout;
 

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circuit Diagram - Beta Pictoris Robot</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        body {
+            overflow-x: hidden;
+            background: radial-gradient(circle at top center, #1e293b, #0f172a, #020617);
+            color: #f8fafc;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container-diagram {
+            max-width: 1200px;
+            width: 90%;
+            margin-top: 100px;
+            margin-bottom: 50px;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            z-index: 2;
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #22d3ee, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: #94a3b8;
+        }
+
+        .diagram-viewer {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+        }
+
+        .diagram-viewer:hover {
+            transform: translateY(-5px);
+            border-color: rgba(34, 211, 238, 0.3);
+        }
+
+        .diagram-img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+            border: 2px solid rgba(6, 182, 212, 0.2);
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .description-box {
+            background: rgba(30, 41, 59, 0.4);
+            border-radius: 16px;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            max-width: 800px;
+            text-align: left;
+        }
+
+        .desc-title {
+            color: #22d3ee;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .desc-text {
+            color: #cbd5e1;
+            line-height: 1.8;
+            font-size: 1.1rem;
+        }
+
+        .back-nav {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            z-index: 100;
+        }
+
+        .btn-back {
+            background: rgba(15, 23, 42, 0.8);
+            color: #22d3ee;
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            font-weight: 600;
+            padding: 12px 24px;
+            border-radius: 50px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background: #22d3ee;
+            color: #0f172a;
+            box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+            transform: translateX(-5px);
+        }
+
+        /* Simplified background animation from index.html */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="back-nav">
+        <a href="index.html" class="btn-back">
+            <span>←</span> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="container-diagram">
+        <div class="header-section">
+            <div class="title">System Architecture</div>
+            <div class="subtitle">Detailed Schematic & Wiring Layout</div>
+        </div>
+
+        <div class="diagram-viewer">
+            <!-- Placeholder if image missing -->
+            <img src="assets/circuit_diagram.png" alt="Beta Pictoris Circuit Diagram" class="diagram-img"
+                onerror="this.style.display='none'; document.getElementById('placeholder-msg').style.display='block';">
+
+            <div id="placeholder-msg"
+                style="display:none; padding:40px; text-align:center; border: 2px dashed #475569; border-radius:12px; margin-bottom:30px; width:80%;">
+                <h3 style="color:#fbbf24; margin-top:0;">⚠️ Diagram Image Not Found</h3>
+                <p>Please upload <code>circuit_diagram.png</code> to the <code>assets/</code> folder.</p>
+            </div>
+
+            <div class="description-box">
+                <h3 class="desc-title"><span>⚡</span> Circuit Overview</h3>
+                <p class="desc-text">
+                    The Beta Pictoris robot is powered by an ESP32 microcontroller at its core, managing all peripheral
+                    communications.
+                    <br><br>
+                    <strong>Key Connections:</strong>
+                <ul style="color:#94a3b8; line-height:1.6; padding-left:20px;">
+                    <li><strong>Motors:</strong> 4x DC Motors configured in Holonomic drive, driven by L298N drivers.
+                    </li>
+                    <li><strong>IMU:</strong> MPU6050 6-axis Gyro/Accel connected via I2C (SDA/SCL).</li>
+                    <li><strong>Servo:</strong> Shooter angle adjustment via PWM channel.</li>
+                    <li><strong>Shooter:</strong> High-speed flywheel motors controlled by MOSFET.</li>
+                    <li><strong>Power:</strong> 3S 11.1V LiPo Battery distributed via buck converters (5V for logic,
+                        VBAT for motors).</li>
+                </ul>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Minimal Background Animation -->
+    <script>
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        const particles = [];
+        for (let i = 0; i < 50; i++) {
+            particles.push({
+                x: Math.random() * width,
+                y: Math.random() * height,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: (Math.random() - 0.5) * 0.5,
+                size: Math.random() * 2 + 1
+            });
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = 'rgba(34, 211, 238, 0.2)';
+
+            particles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.x < 0) p.x = width;
+                if (p.x > width) p.x = 0;
+                if (p.y < 0) p.y = height;
+                if (p.y > height) p.y = 0;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+    </script>
+</body>
+
+</html>

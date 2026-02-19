@@ -539,3 +539,54 @@ canvas {
         opacity: 1;
     }
 }
+
+/* SETTINGS DROPDOWN MENU */
+.settings-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.settings-dropdown-content {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    /* Align right to keep inside screen if near edge */
+    padding-top: 10px;
+    /* Bridge the gap */
+    z-index: 1000;
+}
+
+.settings-dropdown-inner {
+    background-color: rgba(15, 23, 42, 0.95);
+    min-width: 160px;
+    box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    backdrop-filter: blur(5px);
+    overflow: hidden;
+}
+
+.settings-dropdown-content a {
+    color: var(--text-secondary);
+    padding: 10px 15px;
+    text-decoration: none;
+    display: block;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.settings-dropdown-content a:hover {
+    background-color: rgba(6, 182, 212, 0.1);
+    color: var(--accent-cyan);
+}
+
+.settings-dropdown:hover .settings-dropdown-content {
+    display: block;
+    animation: fadeIn 0.2s;
+}
+
+.settings-drop-btn:hover {
+    border-color: var(--accent-cyan) !important;
+    color: var(--accent-cyan) !important;
+}

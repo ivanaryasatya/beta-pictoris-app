@@ -2,10 +2,13 @@
 // ===== TERMINAL =====
 // ===== TERMINAL =====
 function sendCommand(cmd) {
-    // FIREBASE OVERRIDE
-    if (window.isRealMode && typeof sendCommandToFirebase === 'function') {
+    // FIREBASE OVERRIDE (Parallel)
+    console.log("[DEBUG] sendCommand called with:", cmd);
+    if (typeof sendCommandToFirebase === 'function') {
+        console.log("[DEBUG] Calling sendCommandToFirebase");
         sendCommandToFirebase(cmd);
-        return;
+    } else {
+        console.warn("[DEBUG] sendCommandToFirebase is NOT a function");
     }
 
     let t = document.getElementById("terminal");

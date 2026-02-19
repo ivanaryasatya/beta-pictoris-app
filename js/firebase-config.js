@@ -21,3 +21,7 @@ try {
 
 const auth = firebase.auth();
 const database = firebase.database();
+
+// Make globally available
+window.auth = auth;
+window.database = database;

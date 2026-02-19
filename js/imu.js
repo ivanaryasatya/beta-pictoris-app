@@ -30,64 +30,67 @@ function initIMU() {
     const gridHelper = new THREE.GridHelper(10, 10, 0x475569, 0x1e293b);
     scene.add(gridHelper);
 
-    // CAR MODEL (Group)
-    carMesh = new THREE.Group();
+    // Load GLB Model
+    const loader = new THREE.GLTFLoader();
 
-    // Body
-    const geometry = new THREE.BoxGeometry(1, 0.2, 1.8);
-    const material = new THREE.MeshLambertMaterial({ color: 0x06b6d4 }); // Neon Cyan
-    const body = new THREE.Mesh(geometry, material);
-    carMesh.add(body);
+    loader.load('robot.glb', function (gltf) {
+        carMesh = gltf.scene;
 
-    // Cabin (Indicator of front/up)
-    const cabinGeo = new THREE.BoxGeometry(0.8, 0.3, 0.8);
-    const cabinMat = new THREE.MeshLambertMaterial({ color: 0x334155 });
-    const cabin = new THREE.Mesh(cabinGeo, cabinMat);
-    cabin.position.y = 0.25;
-    carMesh.add(cabin);
+        // Adjust Scale / Position automatically (Similar to model-3d.html)
+        const box = new THREE.Box3().setFromObject(carMesh);
+        const size = box.getSize(new THREE.Vector3());
+        const center = box.getCenter(new THREE.Vector3());
 
-    // Wheels
-    const wheelGeo = new THREE.CylinderGeometry(0.25, 0.25, 0.1, 16);
-    const wheelMat = new THREE.MeshLambertMaterial({ color: 0x000000 });
+        // Normalize size to fit in ~3 units
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = 3 / maxDim;
+        carMesh.scale.setScalar(scale);
 
-    const positions = [
-        [-0.6, 0, 0.6], [0.6, 0, 0.6],   // Front
-        [-0.6, 0, -0.6], [0.6, 0, -0.6]  // Back
-    ];
+        // Center object
+        carMesh.position.sub(center.multiplyScalar(scale));
 
-    positions.forEach(pos => {
-        const wheel = new THREE.Mesh(wheelGeo, wheelMat);
-        wheel.rotation.z = Math.PI / 2;
-        wheel.position.set(...pos);
-        carMesh.add(wheel);
+        // --- MANUAL POSITION ADJUSTMENT ---
+        // Change these values to shift the model:
+        const modelOffset = { x: 2, y: 0.5, z: 0 };
+
+        carMesh.position.x += modelOffset.x;
+        carMesh.position.y += modelOffset.y;
+        carMesh.position.z += modelOffset.z;
+        // ----------------------------------
+
+        // Correct initial rotation to face forward if needed
+        // Assuming model faces +Z or -Z, but carMesh is rotated.
+        // Let updateIMU handle the dynamic rotation.
+
+        // Enable shadows
+        carMesh.traverse(function (node) {
+            if (node.isMesh) {
+                node.castShadow = true;
+                node.receiveShadow = true;
+            }
+        });
+
+        scene.add(carMesh);
+    }, undefined, function (error) {
+        console.error("Error loading robot.glb:", error);
+        // Fallback: Primitive Car if load fails
+        createFallbackCar();
     });
 
-    // SHOOTER DEVICE (Sleeve/Cannon)
-    const shooterGroup = new THREE.Group();
-
-    // Barrel
-    const barrelGeo = new THREE.CylinderGeometry(0.1, 0.15, 0.8, 16);
-    const barrelMat = new THREE.MeshLambertMaterial({ color: 0x94a3b8 }); // Metallic Grey
-    const barrel = new THREE.Mesh(barrelGeo, barrelMat);
-    // Cylinder is Y-up. To point Z (Forward), rotate 90 deg around X.
-    barrel.rotation.x = Math.PI / 2;
-    barrel.position.set(0, 0.1, 1.0); // Extending out from front
-    shooterGroup.add(barrel);
-
-    // Muzzle/Tip
-    const tipGeo = new THREE.TorusGeometry(0.12, 0.04, 8, 16);
-    const tipMat = new THREE.MeshLambertMaterial({ color: 0xef4444 });
-    const tip = new THREE.Mesh(tipGeo, tipMat);
-    // Torus acts like a ring on XY plane. To face Z, no rotation needed? 
-    // Wait, Torus lies on XY plane (Z is normal). So if we want it facing Front (Z), it's already correct?
-    // Let's verify. TorusGeometry(radius, tube, ...). "The torus is centered at the origin and lies in the XY plane."
-    // So the hole is along Z. Yes.
-    tip.position.set(0, 0.1, 1.4); // At end of barrel
-    shooterGroup.add(tip);
-
-    carMesh.add(shooterGroup);
-
-    scene.add(carMesh);
+    // Helper for fallback
+    function createFallbackCar() {
+        carMesh = new THREE.Group();
+        // Body
+        const geometry = new THREE.BoxGeometry(1, 0.2, 1.8);
+        const material = new THREE.MeshLambertMaterial({ color: 0x06b6d4 });
+        const body = new THREE.Mesh(geometry, material);
+        carMesh.add(body);
+        // Cabin
+        const cabin = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.3, 0.8), new THREE.MeshLambertMaterial({ color: 0x334155 }));
+        cabin.position.y = 0.25;
+        carMesh.add(cabin);
+        scene.add(carMesh);
+    }
 
     // Resize listener
     // Resize listener using ResizeObserver for container
@@ -129,10 +132,14 @@ function updateIMU(roll, pitch, yaw) {
     // Assuming standard aerospace:
     // Pitch -> X, Yaw -> Y, Roll -> Z
     if (carMesh) {
-        carMesh.rotation.x = THREE.Math.degToRad(pitch);
-        // Add 180 degrees offset to Yaw to face front
-        carMesh.rotation.y = THREE.Math.degToRad(yaw + 180);
-        carMesh.rotation.z = THREE.Math.degToRad(-roll); // Invert roll for correct visualization
+        // --- MANUAL ROTATION ADJUSTMENT ---
+        // Change these values to rotate the model (in Degrees):
+        const modelRotationOffset = { x: 0, y: 90, z: 0 };
+
+        carMesh.rotation.x = THREE.Math.degToRad(pitch + modelRotationOffset.x);
+        carMesh.rotation.y = THREE.Math.degToRad(yaw + modelRotationOffset.y);
+        carMesh.rotation.z = THREE.Math.degToRad(-roll + modelRotationOffset.z);
+        // ----------------------------------
     }
 
     // UPDATE ATTITUDE INDICATOR (Refined Style)

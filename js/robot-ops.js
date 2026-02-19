@@ -98,6 +98,9 @@ function updateSpeedDisplay(type, val) {
         if (el) el.innerText = val + '°';
     } else if (type === 'FAN') {
         document.getElementById('valFan').innerText = val;
+        // Also update slider position if it wasn't the source (e.g. from telemetry)
+        const slider = document.getElementById('fanSlider');
+        if (slider && slider.value != val) slider.value = val;
     }
 }
 
@@ -113,7 +116,28 @@ function updateSpeed(type, val) {
         document.getElementById('shotAngle').value = val;
         sendCommand('ANGLE:' + val);
     } else if (type === 'FAN') {
+        // Only send if not in auto mode? 
+        // Actually the slider is disabled in auto mode, so onchange won't fire from user.
         sendCommand('FAN:' + val);
+    }
+}
+
+function toggleFanAuto(checkbox) {
+    const slider = document.getElementById('fanSlider');
+    if (!slider) return;
+
+    if (checkbox.checked) {
+        // Auto Mode ON
+        slider.disabled = true;
+        slider.style.opacity = '0.5';
+        slider.style.cursor = 'not-allowed';
+        sendCommand('FAN_AUTO:1');
+    } else {
+        // Auto Mode OFF
+        slider.disabled = false;
+        slider.style.opacity = '1';
+        slider.style.cursor = 'pointer';
+        sendCommand('FAN_AUTO:0');
     }
 }
 
@@ -474,5 +498,71 @@ function updateUltrasonic(distances) {
             bar.style.height = pct + "%";
             val.innerText = Math.round(d) + "cm";
         }
+    }
+}
+// ===== AUX LIGHTING CONTROL =====
+const auxState = {
+    LASER: { state: 0, mode: 'MANUAL' }, // 0=off, 1=on, 2=blink
+    LED: { state: 0, mode: 'MANUAL' }
+};
+
+function toggleAux(type) {
+    // Determine target state (Toggle 0 <-> 1)
+    // If currently blinking (2), switch to 0 (Off).
+    let current = auxState[type].state;
+    let next = (current === 0) ? 1 : 0;
+
+    auxState[type].state = next;
+    auxState[type].mode = 'MANUAL';
+
+    // Update Button UI
+    updateAuxButton(type, next);
+
+    // Send Command
+    sendCommand(`${type}:${next}`);
+}
+
+function setBlink(type) {
+    // Read Inputs
+    let onTime, offTime;
+    if (type === 'LASER') {
+        onTime = document.getElementById('laserOnTime').value || 100;
+        offTime = document.getElementById('laserOffTime').value || 100;
+    } else {
+        onTime = document.getElementById('ledOnTime').value || 500;
+        offTime = document.getElementById('ledOffTime').value || 500;
+    }
+
+    // Set State
+    auxState[type].state = 2; // Blink
+    auxState[type].mode = 'BLINK';
+
+    updateAuxButton(type, 2);
+
+    // Command Format: "CMD:2,on,off"
+    // Using string format which protocol-map now supports
+    sendCommand(`${type}:2,${onTime},${offTime}`);
+}
+
+function updateAuxButton(type, state) {
+    let btnId = (type === 'LASER') ? 'btnLaser' : 'btnLed';
+    let btn = document.getElementById(btnId);
+    if (!btn) return;
+
+    if (state === 0) {
+        btn.style.background = '#334155'; // Off (Slate)
+        btn.style.color = '#fff';
+        btn.classList.remove('blink-anim');
+    } else if (state === 1) {
+        btn.style.background = (type === 'LASER') ? '#ef4444' : '#fbbf24'; // Red/Amber
+        btn.style.color = '#fff';
+        btn.classList.remove('blink-anim');
+    } else if (state === 2) {
+        btn.style.background = (type === 'LASER') ? '#7f1d1d' : '#78350f'; // Darker
+        btn.style.color = '#fff';
+        // Add css class for visual blink if desired
+        // btn.classList.add('blink-anim'); 
+        // For now just change text color or border?
+        btn.style.border = '1px solid ' + ((type === 'LASER') ? '#ef4444' : '#fbbf24');
     }
 }

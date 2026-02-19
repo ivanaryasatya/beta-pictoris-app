@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Advanced Robot Control Panel</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="css/style.css">
 
@@ -197,16 +198,25 @@
                     <span>🏠</span> Home
                 </a>
 
-                <!-- Layout Controls -->
-                <div style="display:flex; gap:5px;">
-                    <button onclick="saveLayout()" title="Save Layout as Default"
-                        style="padding:5px 10px; font-size:12px; background:#0f172a; border:1px solid #475569; color:#94a3b8;">
-                        💾 Save
+                <!-- Settings Dropdown -->
+                <!-- Settings Dropdown -->
+                <div class="settings-dropdown" style="position:relative; display:inline-block; margin-left:10px;">
+                    <button class="settings-drop-btn"
+                        style="padding:5px 10px; font-size:12px; background:#0f172a; border:1px solid #475569; color:#94a3b8; cursor:pointer; display:flex; align-items:center; gap:5px;">
+                        <span>⚙️</span> Settings ▼
                     </button>
-                    <button onclick="resetLayout()" title="Reset Layout"
-                        style="padding:5px 10px; font-size:12px; background:#0f172a; border:1px solid #475569; color:#ef4444;">
-                        🔄 Reset
-                    </button>
+                    <!-- Content Wrapper specifically for hover gap fix -->
+                    <div class="settings-dropdown-content">
+                        <div class="settings-dropdown-inner">
+                            <a href="#" class="setting-item"
+                                onclick="try{window.openProtocolEditor()}catch(e){alert('Err: '+e.message)}; return false;">📝
+                                Protocol Data</a>
+                            <div style="border-top:1px solid #334155; margin:5px 0;"></div>
+                            <a href="#" class="setting-item" onclick="saveLayout(); return false;">💾 Save Layout</a>
+                            <a href="#" class="setting-item" onclick="resetLayout(); return false;"
+                                style="color:#ef4444;">🔄 Reset Layout</a>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -338,6 +348,52 @@
                             style="background:#a855f7; width:100%; white-space:nowrap;">Lock Target</button></div>
                 </div>
 
+                <!-- LIGHTING / ACCESSORIES -->
+                <div style="background:#0b1220; padding:10px; border-radius:8px; margin-bottom:15px;">
+                    <div style="font-size:12px; color:#94a3b8; margin-bottom:8px; text-align:center;">LIGHTING CONTROL
+                    </div>
+
+                    <!-- Labels -->
+                    <div style="display:flex; gap:5px; margin-bottom:2px; padding:0 5px;">
+                        <div style="width:60px;"></div>
+                        <div style="flex:1; display:flex; gap:2px;">
+                            <span style="flex:1; font-size:9px; color:#64748b; text-align:center;">On (ms)</span>
+                            <span style="flex:1; font-size:9px; color:#64748b; text-align:center;">Off (ms)</span>
+                        </div>
+                        <div style="width:30px;"></div>
+                    </div>
+
+                    <!-- LASER -->
+                    <div
+                        style="display:flex; align-items:center; gap:5px; margin-bottom:8px; background:#1e293b; padding:5px; border-radius:5px;">
+                        <button id="btnLaser" onclick="toggleAux('LASER')"
+                            style="padding:6px 10px; font-size:12px; background:#334155; width:60px;">LASER</button>
+                        <div style="flex:1; display:flex; gap:2px;">
+                            <input id="laserOnTime" placeholder="On(ms)" value="100" type="number"
+                                style="font-size:10px; padding:4px; text-align:center;">
+                            <input id="laserOffTime" placeholder="Off(ms)" value="100" type="number"
+                                style="font-size:10px; padding:4px; text-align:center;">
+                        </div>
+                        <button onclick="setBlink('LASER')" title="Set Blink Pattern"
+                            style="padding:6px; font-size:12px; background:#0f172a; width:30px;">⚙</button>
+                    </div>
+
+                    <!-- FRONT LED -->
+                    <div
+                        style="display:flex; align-items:center; gap:5px; background:#1e293b; padding:5px; border-radius:5px;">
+                        <button id="btnLed" onclick="toggleAux('LED')"
+                            style="padding:6px 10px; font-size:12px; background:#334155; width:60px;">F.LED</button>
+                        <div style="flex:1; display:flex; gap:2px;">
+                            <input id="ledOnTime" placeholder="On(ms)" value="500" type="number"
+                                style="font-size:10px; padding:4px; text-align:center;">
+                            <input id="ledOffTime" placeholder="Off(ms)" value="500" type="number"
+                                style="font-size:10px; padding:4px; text-align:center;">
+                        </div>
+                        <button onclick="setBlink('LED')" title="Set Blink Pattern"
+                            style="padding:6px; font-size:12px; background:#0f172a; width:30px;">⚙</button>
+                    </div>
+                </div>
+
                 <!-- Motor Speed Slider (Moved down or kept simple) -->
                 <div style="margin-bottom:10px;">
                     <label style="font-size:10px; color:#cbd5e1;">Motor Speed: <span id="valMotor">150</span></label>
@@ -347,9 +403,16 @@
 
                 <!-- Fan Speed Slider -->
                 <div style="margin-bottom:10px;">
-                    <label style="font-size:10px; color:#cbd5e1;">Fan Speed: <span id="valFan">0</span></label>
-                    <input type="range" min="0" max="255" value="0" oninput="updateSpeedDisplay('FAN', this.value)"
-                        onchange="updateSpeed('FAN', this.value)" style="width:100%">
+                    <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <label style="font-size:10px; color:#cbd5e1;">Fan Speed: <span id="valFan">0</span></label>
+                        <label
+                            style="font-size:10px; color:#94a3b8; display:flex; align-items:center; gap:3px; cursor:pointer;">
+                            <input type="checkbox" onchange="toggleFanAuto(this)"> Auto
+                        </label>
+                    </div>
+                    <input id="fanSlider" type="range" min="0" max="255" value="0"
+                        oninput="updateSpeedDisplay('FAN', this.value)" onchange="updateSpeed('FAN', this.value)"
+                        style="width:100%; transition: opacity 0.3s;">
                 </div>
 
 
@@ -660,7 +723,11 @@
                     </div>
                     <div id="indLocked" style="text-align:center; color:#ef4444;">
                         <div style="font-size:20px;">⬤</div>
-                        <div style="font-size:12px;">Target Locked</div>
+                        <div style="padding:5px; cursor:pointer; color:white;" onclick="resetLayout()">Reset Default
+                        </div>
+                        <div style="border-top:1px solid #334155; margin:5px 0;"></div>
+                        <div style="padding:5px; cursor:pointer; color:#22d3ee;" onclick="openProtocolEditor()">Edit
+                            Protocol Map</div>
                     </div>
                 </div>
 
@@ -976,9 +1043,13 @@
             <button onclick="saveCameraSettings()" style="background:#22c55e;">Save & Close</button>
             <button onclick="closeCameraSettings()" style="background:#ef4444;">Close</button>
         </div>
+
+
+
     </div>
 
-    <script src="js/protocol-map.js"></script>
+    <!-- Custom Scripts -->
+    <script src="js/protocol-map.js?v=2"></script>
     <script src="js/communication.js"></script>
     <script src="js/robot-ops.js"></script>
     <script src="js/autonomous.js"></script>
@@ -992,6 +1063,59 @@
     <script src="js/panel-switcher.js"></script>
     <script src="js/main.js"></script>
     <script src="js/chat.js"></script> <!-- Chat Logic -->
+    <!-- Protocol Map Editor Modal -->
+    <div id="protocolEditorModal" class="modal"
+        style="display:none; position:fixed; z-index:9999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.4);">
+        <div class="modal-content"
+            style="background-color:#1e293b; margin:15% auto; padding:20px; border:1px solid #888; width:500px; height:400px; display:flex; flex-direction:column; border-radius: 8px;">
+            <div class="modal-header"
+                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="margin:0;">Edit Protocol Map (JSON)</h3>
+                <button class="close-btn" onclick="document.getElementById('protocolEditorModal').style.display='none'"
+                    style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column;">
+                <p style="font-size:12px; color:#cbd5e1; margin-bottom:5px;">Edit the JSON object below. Format:
+                    "COMMAND": "CODE"</p>
+                <textarea id="protocolJsonInput"
+                    style="flex:1; background:#0f172a; color:#22d3ee; border:1px solid #334155; padding:10px; font-family:monospace; resize:none;"></textarea>
+                <div style="margin-top:10px; display:flex; justify-content:flex-end; gap:10px;">
+                    <button onclick="saveProtocolEditor()"
+                        style="background:#22c55e; padding:8px 16px; border:none; border-radius:4px; color:white; cursor:pointer;">Save
+                        to Firebase</button>
+                    <button onclick="document.getElementById('protocolEditorModal').style.display='none'"
+                        style="background:#ef4444; padding:8px 16px; border:none; border-radius:4px; color:white; cursor:pointer;">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Text Editor Modal -->
+    <div id="textEditorModal" class="modal"
+        style="display:none; position:fixed; z-index:10000; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.4);">
+        <div class="modal-content"
+            style="background-color:#1e293b; margin:10% auto; padding:20px; border:1px solid #888; width:600px; height:500px; display:flex; flex-direction:column; border-radius: 8px;">
+            <div class="modal-header"
+                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 id="textEditorTitle" style="margin:0; color:#f8fafc;">New Text File</h3>
+                <button onclick="closeTextEditor()"
+                    style="background:none; border:none; color:white; font-size:24px; cursor:pointer;">&times;</button>
+            </div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:10px;">
+                <input id="txtTitle" placeholder="File Title"
+                    style="background:#0f172a; color:white; border:1px solid #334155; padding:10px; border-radius:4px; font-weight:bold;">
+                <textarea id="txtContent" placeholder="Enter content here..."
+                    style="flex:1; background:#0f172a; color:#cbd5e1; border:1px solid #334155; padding:10px; font-family:monospace; resize:none; border-radius:4px;"></textarea>
+                <input type="hidden" id="txtKey">
+
+                <div style="display:flex; justify-content:flex-end; gap:10px;">
+                    <button onclick="saveTextItem()"
+                        style="background:#3b82f6; padding:8px 20px; border:none; border-radius:4px; color:white; cursor:pointer; font-weight:bold;">Save</button>
+                    <button onclick="closeTextEditor()"
+                        style="background:#ef4444; padding:8px 20px; border:none; border-radius:4px; color:white; cursor:pointer;">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
