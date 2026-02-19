@@ -116,7 +116,8 @@ function initAuthSystem(isLanding, isControlPanel) {
     // Initialize/Sync Logic (Lockdown, AutoApprove)
     database.ref('config/is_locked').on('value', (snap) => {
         isSystemLocked = (snap.val() === true);
-        if (isControlPanel) updateLockdownState(isSystemLocked);
+        // Pass context to updateLockdownState
+        updateLockdownState(isSystemLocked, isLanding, isControlPanel);
     });
 
     database.ref('config/auto_approve').on('value', (snap) => {
@@ -183,22 +184,27 @@ function handleRequestAccess(redirectAfter = false) {
 }
 
 function registerNewUser(username) {
-    const userData = {
-        username: username,
-        role: 'user',
-        approved: false, // Wait for admin
-        connectedAt: firebase.database.ServerValue.TIMESTAMP
-    };
+    // Check Auto-Approve Config BEFORE creating user
+    database.ref('config/auto_approve').once('value').then(snap => {
+        const shouldApprove = (snap.val() === true);
 
-    database.ref('usernames/' + username).set(userData)
-        .then(() => {
-            console.log("[AUTH] User registered.");
-            startSessionMonitoring(username);
-        })
-        .catch(err => {
-            UI.error.innerText = "Reg Error: " + err.message;
-            resetMainBtn();
-        });
+        const userData = {
+            username: username,
+            role: 'user',
+            approved: shouldApprove, // Set based on config
+            connectedAt: firebase.database.ServerValue.TIMESTAMP
+        };
+
+        database.ref('usernames/' + username).set(userData)
+            .then(() => {
+                console.log(`[AUTH] User registered. Auto-Approved: ${shouldApprove}`);
+                startSessionMonitoring(username);
+            })
+            .catch(err => {
+                UI.error.innerText = "Reg Error: " + err.message;
+                resetMainBtn();
+            });
+    });
 }
 
 function updateUserStatus(username, approved) {

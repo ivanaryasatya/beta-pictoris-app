@@ -410,478 +410,567 @@
             </div>
         </div>
 
-        <!-- CHAT WIDGET -->
-        <div class="widget" id="widget_chat">
-            <div class="widget-header">
-                <h3>💬 Team Chat</h3>
-                <div class="widget-controls" style="display:flex; align-items:center; gap:5px;">
-                    <button id="btnClearChat" onclick="clearChat()"
-                        style="display:none; background:#ef4444; border:none; color:white; font-size:10px; padding:2px 5px; border-radius:3px; cursor:pointer;"
-                        title="Clear All Chat">🗑 Clear</button>
-                    <button class="widget-btn" onclick="toggleMaximize(this)">⛶</button>
-                </div>
-            </div>
-            <div class="widget-content" style="display:flex; flex-direction:column; padding:0;">
-                <div id="chatMessages" style="flex:1; overflow-y:auto; padding:10px; background:#0f172a;">
-                    <div style="color:#64748b; font-size:12px; text-align:center;">--- Chat Started ---</div>
-                </div>
-                <div style="display:flex; padding:5px; background:#1e293b; border-top:1px solid #334155;">
-                    <input id="chatInput" placeholder="Type message..."
-                        style="flex:1; background:#0f172a; border:none; color:white; padding:8px; border-radius:4px; font-size:12px;">
-                    <button id="chatSendBtn"
-                        style="background:#3b82f6; border:none; color:white; padding:0 12px; margin-left:5px; border-radius:4px; cursor:pointer;">➤</button>
-                </div>
+    </div>
+
+    <!-- BUZZER WIDGET -->
+    <div class="widget" id="widget_buzzer">
+        <div class="widget-header">
+            <h3>🎹 Audio Synth</h3>
+            <div class="widget-controls">
+                <button class="widget-btn" onclick="toggleMaximize(this)">⛶</button>
             </div>
         </div>
-
-        <!-- SYSTEM LOG WIDGET (Consolidated) -->
-        <div class="widget" id="widget_term_sys">
-            <div class="widget-header">
-                <h3>🖥 System Log</h3>
-                <div class="widget-controls" style="display:flex; align-items:center; gap:10px;">
-                    <label style="margin:0; cursor:pointer; color:var(--text-secondary); font-size:10px;">
-                        <input type="checkbox" id="autoScrollLogs" checked style="width:auto; margin:0 4px 0 0;">
-                        Auto-scroll
-                    </label>
-                    <button class="widget-btn" onclick="toggleMaximize(this)">⛶</button>
-                </div>
+        <div class="widget-content" style="display:flex; flex-direction:column; gap:10px;">
+            <!-- PIANO KEYS (Do to Do) -->
+            <div
+                style="background: #1e293b; padding: 10px; border-radius: 8px; overflow-x:auto; display:flex; justify-content:center; gap:4px;">
+                <button class="piano-key" onclick="playTone('C4')"
+                    style="width:35px; height:100px; background:white; color:black; border:none; border-radius:0 0 4px 4px; cursor:pointer; position:relative;">
+                    <span
+                        style="position:absolute; bottom:5px; left:0; width:100%; text-align:center; font-size:10px; font-weight:bold;">Do</span>
+                </button>
+                <button class="piano-key" onclick="playTone('D4')"
+                    style="width:35px; height:100px; background:white; color:black; border:none; border-radius:0 0 4px 4px; cursor:pointer; position:relative;">
+                    <span
+                        style="position:absolute; bottom:5px; left:0; width:100%; text-align:center; font-size:10px; font-weight:bold;">Re</span>
+                </button>
+                <button class="piano-key" onclick="playTone('E4')"
+                    style="width:35px; height:100px; background:white; color:black; border:none; border-radius:0 0 4px 4px; cursor:pointer; position:relative;">
+                    <span
+                        style="position:absolute; bottom:5px; left:0; width:100%; text-align:center; font-size:10px; font-weight:bold;">Mi</span>
+                </button>
+                <button class="piano-key" onclick="playTone('F4')"
+                    style="width:35px; height:100px; background:white; color:black; border:none; border-radius:0 0 4px 4px; cursor:pointer; position:relative;">
+                    <span
+                        style="position:absolute; bottom:5px; left:0; width:100%; text-align:center; font-size:10px; font-weight:bold;">Fa</span>
+                </button>
+                <button class="piano-key" onclick="playTone('G4')"
+                    style="width:35px; height:100px; background:white; color:black; border:none; border-radius:0 0 4px 4px; cursor:pointer; position:relative;">
+                    <span
+                        style="position:absolute; bottom:5px; left:0; width:100%; text-align:center; font-size:10px; font-weight:bold;">Sol</span>
+                </button>
+                <button class="piano-key" onclick="playTone('A4')"
+                    style="width:35px; height:100px; background:white; color:black; border:none; border-radius:0 0 4px 4px; cursor:pointer; position:relative;">
+                    <span
+                        style="position:absolute; bottom:5px; left:0; width:100%; text-align:center; font-size:10px; font-weight:bold;">La</span>
+                </button>
+                <button class="piano-key" onclick="playTone('B4')"
+                    style="width:35px; height:100px; background:white; color:black; border:none; border-radius:0 0 4px 4px; cursor:pointer; position:relative;">
+                    <span
+                        style="position:absolute; bottom:5px; left:0; width:100%; text-align:center; font-size:10px; font-weight:bold;">Si</span>
+                </button>
+                <button class="piano-key" onclick="playTone('C5')"
+                    style="width:35px; height:100px; background:white; color:black; border:none; border-radius:0 0 4px 4px; cursor:pointer; position:relative;">
+                    <span
+                        style="position:absolute; bottom:5px; left:0; width:100%; text-align:center; font-size:10px; font-weight:bold;">Do</span>
+                </button>
             </div>
-            <div class="widget-content">
-                <div id="terminal"
-                    style="background:#0f172a; height:100%; overflow-y:auto; padding:5px; font-family:monospace; font-size:12px;">
+
+            <!-- CONTROLS -->
+            <div style="display:flex; gap:5px; align-items:center;">
+                <input id="songNameInput" placeholder="Song Name"
+                    style="flex:1; width:50px; background:#0f172a; border:1px solid #475569; color:white; padding:5px; border-radius:4px;">
+                <button onclick="addNoteBlock()"
+                    style="flex:1; background:#3b82f6; color:white; border:none; padding:8px; border-radius:4px; cursor:pointer;">+
+                    Add Block</button>
+            </div>
+            <div style="display:flex; gap:5px;">
+                <button onclick="playSequence()"
+                    style="flex:1; background:#22c55e; color:white; border:none; padding:8px; border-radius:4px; cursor:pointer; font-weight:bold;">▶
+                    Play Sequence</button>
+                <button onclick="saveSong()"
+                    style="flex:1; background:#06b6d4; color:white; border:none; padding:8px; border-radius:4px; cursor:pointer;">💾
+                    Save</button>
+            </div>
+
+            <!-- COMPOSER AREA -->
+            <div id="composerSequence"
+                style="flex:1; background:rgba(0,0,0,0.2); overflow-y:auto; padding:5px; border-radius:4px; min-height:120px; border:1px solid #334155;">
+                <div style="text-align:center; color:#64748b; font-size:10px; margin-top:20px;">Sequence Empty - Add
+                    Blocks</div>
+            </div>
+
+            <!-- LIBRARY -->
+            <div style="border-top:1px solid #334155; padding-top:5px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                    <span style="font-size:11px; color:#94a3b8;">Saved Songs</span>
+                    <button onclick="loadCommonSongs()"
+                        style="font-size:10px; background:transparent; border:none; color:#38bdf8; cursor:pointer;">Refresh</button>
                 </div>
+                <div id="savedSongsList" style="max-height:80px; overflow-y:auto; font-size:10px;"></div>
             </div>
         </div>
+    </div>
 
-        <!-- CAMERA WIDGET -->
-        <div class="widget" id="widget_camera">
-            <div class="widget-header">
-                <h3>📷 Robot Camera</h3>
-                <div class="widget-controls" style="display:flex; align-items:center; gap:5px;">
-                    <button id="btnCamToggle" class="widget-btn" onclick="toggleCameraState()"
-                        style="color:#ef4444; font-weight:bold;" title="Turn Camera ON/OFF">⏻</button>
-                    <button class="widget-btn" onclick="openCameraSettings()">⚙️</button>
-                    <button class="widget-btn" onclick="toggleMaximize(this)">⛶</button>
-                </div>
-            </div>
-            <div class="widget-content"
-                style="display:flex; align-items:center; justify-content:center; background:#000;">
-                <div style="color:#475569; text-align:center;">
-                    <div style="font-size:30px;">📷</div>
-                    <div style="font-size:12px;">NO SIGNAL</div>
-                </div>
+    <!-- CHAT WIDGET -->
+    <div class="widget" id="widget_chat">
+        <div class="widget-header">
+            <h3>💬 Team Chat</h3>
+            <div class="widget-controls" style="display:flex; align-items:center; gap:5px;">
+                <button id="btnClearChat" onclick="clearChat()"
+                    style="display:none; background:#ef4444; border:none; color:white; font-size:10px; padding:2px 5px; border-radius:3px; cursor:pointer;"
+                    title="Clear All Chat">🗑 Clear</button>
+                <button class="widget-btn" onclick="toggleMaximize(this)">⛶</button>
             </div>
         </div>
-
-        <!-- IMU WIDGET -->
-        <div class="widget" id="widget_imu">
-            <div class="widget-header">
-                <h3>🧭 IMU Orientation</h3>
-                <div class="widget-controls">
-                    <button class="widget-btn" onclick="calibrateIMU()" style="color:#fbbf24;"
-                        title="Calibrate Zero">🎯</button>
-                    <button class="widget-btn" onclick="toggleMaximize(this)">⛶</button>
-                </div>
+        <div class="widget-content" style="display:flex; flex-direction:column; padding:0;">
+            <div id="chatMessages" style="flex:1; overflow-y:auto; padding:10px; background:#0f172a;">
+                <div style="color:#64748b; font-size:12px; text-align:center;">--- Chat Started ---</div>
             </div>
-            <div class="widget-content" style="position:relative; padding:0; overflow:hidden;">
-                <!-- 3D SCENE (Background) -->
-                <div id="imu-container" style="width:100%; height:100%; position:absolute; top:0; left:0;"></div>
+            <div style="display:flex; padding:5px; background:#1e293b; border-top:1px solid #334155;">
+                <input id="chatInput" placeholder="Type message..."
+                    style="flex:1; background:#0f172a; border:none; color:white; padding:8px; border-radius:4px; font-size:12px;">
+                <button id="chatSendBtn"
+                    style="background:#3b82f6; border:none; color:white; padding:0 12px; margin-left:5px; border-radius:4px; cursor:pointer;">➤</button>
+            </div>
+        </div>
+    </div>
 
-                <!-- OVERLAYS -->
-                <div
-                    style="position:absolute; top:10px; left:10px; z-index:10; font-family:monospace; color:#22d3ee; background:rgba(0,0,0,0.5); padding:5px; border-radius:4px; pointer-events:none;">
-                    <div>R: <b id="valRoll">0.0</b>°</div>
-                    <div>P: <b id="valPitch">0.0</b>°</div>
-                    <div>Y: <b id="valYaw">0.0</b>°</div>
-                </div>
+    <!-- SYSTEM LOG WIDGET (Consolidated) -->
+    <div class="widget" id="widget_term_sys">
+        <div class="widget-header">
+            <h3>🖥 System Log</h3>
+            <div class="widget-controls" style="display:flex; align-items:center; gap:10px;">
+                <label style="margin:0; cursor:pointer; color:var(--text-secondary); font-size:10px;">
+                    <input type="checkbox" id="autoScrollLogs" checked style="width:auto; margin:0 4px 0 0;">
+                    Auto-scroll
+                </label>
+                <button class="widget-btn" onclick="toggleMaximize(this)">⛶</button>
+            </div>
+        </div>
+        <div class="widget-content">
+            <div id="terminal"
+                style="background:#0f172a; height:100%; overflow-y:auto; padding:5px; font-family:monospace; font-size:12px;">
+            </div>
+        </div>
+    </div>
 
-                <!-- COMPASS INDICATOR -->
-                <div id="compass-indicator"
-                    style="position:absolute; bottom:10px; left:10px; width:120px; height:120px; background:rgba(0,0,0,0.5); border-radius:50%; border:2px solid #334155; display:flex; align-items:center; justify-content:center; overflow:hidden; z-index:10;">
-                    <!-- Compass Face (Rotates) -->
-                    <div id="compass-face"
-                        style="position:relative; width:100%; height:100%; border-radius:50%; transition: transform 0.1s linear;">
-                        <!-- N/S/E/W Labels -->
-                        <div
-                            style="position:absolute; top:5px; left:50%; transform:translateX(-50%); font-size:12px; font-weight:bold; color:#ef4444;">
-                            N</div>
-                        <div
-                            style="position:absolute; bottom:5px; left:50%; transform:translateX(-50%); font-size:12px; font-weight:bold; color:white;">
-                            S</div>
-                        <div
-                            style="position:absolute; right:5px; top:50%; transform:translateY(-50%); font-size:12px; font-weight:bold; color:white;">
-                            E</div>
-                        <div
-                            style="position:absolute; left:5px; top:50%; transform:translateY(-50%); font-size:12px; font-weight:bold; color:white;">
-                            W</div>
-                        <!-- Ticks -->
-                        <div
-                            style="position:absolute; top:0; left:50%; width:1px; height:100%; background:rgba(255,255,255,0.2);">
-                        </div>
-                        <div
-                            style="position:absolute; top:50%; left:0; width:100%; height:1px; background:rgba(255,255,255,0.2);">
-                        </div>
-                        <div
-                            style="position:absolute; top:15%; left:50%; width:1px; height:70%; background:rgba(255,255,255,0.1); transform:rotate(45deg);">
-                        </div>
-                        <div
-                            style="position:absolute; top:15%; left:50%; width:1px; height:70%; background:rgba(255,255,255,0.1); transform:rotate(-45deg);">
-                        </div>
-                    </div>
-                    <!-- Fixed Needle/Marker -->
+    <!-- CAMERA WIDGET -->
+    <div class="widget" id="widget_camera">
+        <div class="widget-header">
+            <h3>📷 Robot Camera</h3>
+            <div class="widget-controls" style="display:flex; align-items:center; gap:5px;">
+                <button id="btnCamToggle" class="widget-btn" onclick="toggleCameraState()"
+                    style="color:#ef4444; font-weight:bold;" title="Turn Camera ON/OFF">⏻</button>
+                <button class="widget-btn" onclick="openCameraSettings()">⚙️</button>
+                <button class="widget-btn" onclick="toggleMaximize(this)">⛶</button>
+            </div>
+        </div>
+        <div class="widget-content" style="display:flex; align-items:center; justify-content:center; background:#000;">
+            <div style="color:#475569; text-align:center;">
+                <div style="font-size:30px;">📷</div>
+                <div style="font-size:12px;">NO SIGNAL</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- IMU WIDGET -->
+    <div class="widget" id="widget_imu">
+        <div class="widget-header">
+            <h3>🧭 IMU Orientation</h3>
+            <div class="widget-controls">
+                <button class="widget-btn" onclick="calibrateIMU()" style="color:#fbbf24;"
+                    title="Calibrate Zero">🎯</button>
+                <button class="widget-btn" onclick="toggleMaximize(this)">⛶</button>
+            </div>
+        </div>
+        <div class="widget-content" style="position:relative; padding:0; overflow:hidden;">
+            <!-- 3D SCENE (Background) -->
+            <div id="imu-container" style="width:100%; height:100%; position:absolute; top:0; left:0;"></div>
+
+            <!-- OVERLAYS -->
+            <div
+                style="position:absolute; top:10px; left:10px; z-index:10; font-family:monospace; color:#22d3ee; background:rgba(0,0,0,0.5); padding:5px; border-radius:4px; pointer-events:none;">
+                <div>R: <b id="valRoll">0.0</b>°</div>
+                <div>P: <b id="valPitch">0.0</b>°</div>
+                <div>Y: <b id="valYaw">0.0</b>°</div>
+            </div>
+
+            <!-- COMPASS INDICATOR -->
+            <div id="compass-indicator"
+                style="position:absolute; bottom:10px; left:10px; width:120px; height:120px; background:rgba(0,0,0,0.5); border-radius:50%; border:2px solid #334155; display:flex; align-items:center; justify-content:center; overflow:hidden; z-index:10;">
+                <!-- Compass Face (Rotates) -->
+                <div id="compass-face"
+                    style="position:relative; width:100%; height:100%; border-radius:50%; transition: transform 0.1s linear;">
+                    <!-- N/S/E/W Labels -->
                     <div
-                        style="position:absolute; top:0; left:50%; transform:translateX(-50%); width:0; height:0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 10px solid #facc15; z-index:11;">
+                        style="position:absolute; top:5px; left:50%; transform:translateX(-50%); font-size:12px; font-weight:bold; color:#ef4444;">
+                        N</div>
+                    <div
+                        style="position:absolute; bottom:5px; left:50%; transform:translateX(-50%); font-size:12px; font-weight:bold; color:white;">
+                        S</div>
+                    <div
+                        style="position:absolute; right:5px; top:50%; transform:translateY(-50%); font-size:12px; font-weight:bold; color:white;">
+                        E</div>
+                    <div
+                        style="position:absolute; left:5px; top:50%; transform:translateY(-50%); font-size:12px; font-weight:bold; color:white;">
+                        W</div>
+                    <!-- Ticks -->
+                    <div
+                        style="position:absolute; top:0; left:50%; width:1px; height:100%; background:rgba(255,255,255,0.2);">
+                    </div>
+                    <div
+                        style="position:absolute; top:50%; left:0; width:100%; height:1px; background:rgba(255,255,255,0.2);">
+                    </div>
+                    <div
+                        style="position:absolute; top:15%; left:50%; width:1px; height:70%; background:rgba(255,255,255,0.1); transform:rotate(45deg);">
+                    </div>
+                    <div
+                        style="position:absolute; top:15%; left:50%; width:1px; height:70%; background:rgba(255,255,255,0.1); transform:rotate(-45deg);">
+                    </div>
+                </div>
+                <!-- Fixed Needle/Marker -->
+                <div
+                    style="position:absolute; top:0; left:50%; transform:translateX(-50%); width:0; height:0; border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 10px solid #facc15; z-index:11;">
+                </div>
+            </div>
+
+            <!-- ATTITUDE INDICATOR (PFD STYLE) - Bottom Right -->
+
+            <div id="ai-container"
+                style="width:120px; height:120px; background:#000; border-radius:50%; border:3px solid #475569; position:absolute; bottom:10px; right:10px; overflow:hidden; box-shadow:0 0 20px rgba(0,0,0,0.8); z-index:10;">
+
+                <!-- ROTATING HORIZON (Handles ROLL) -->
+                <div id="ai-horizon"
+                    style="width:100%; height:100%; position:absolute; top:0; left:0; transform-origin:center;">
+
+                    <!-- PITCH PLANE (Handles PITCH) -->
+                    <div id="ai-pitch-plane"
+                        style="position:absolute; top:-50%; left:-50%; width:200%; height:200%; background:linear-gradient(to bottom, #0099cc 50%, #8b4513 50%);">
+                        <!-- Pitch Ladder -->
+                        <div
+                            style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:60px; text-align:center; opacity:0.8;">
+                            <!-- +20 -->
+                            <div style="height:1px; background:white; margin:15px auto; width:15px;"></div>
+                            <!-- +10 -->
+                            <div style="height:1px; background:white; margin:15px auto; width:25px;"></div>
+                            <!-- Horizon -->
+                            <div style="height:2px; background:white; margin:15px auto; width:80px;"></div>
+                            <!-- -10 -->
+                            <div style="height:1px; background:white; margin:15px auto; width:25px;"></div>
+                            <!-- -20 -->
+                            <div style="height:1px; background:white; margin:15px auto; width:15px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Bank Pointer (Rotates with Horizon) -->
+                    <div
+                        style="position:absolute; top:10px; left:50%; transform:translateX(-50%); width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-bottom:8px solid white;">
                     </div>
                 </div>
 
-                <!-- ATTITUDE INDICATOR (PFD STYLE) - Bottom Right -->
+                <!-- FIXED BEZEL ELEMENTS (HUD) -->
+                <!-- Center Wings (Aircraft Reference) -->
+                <div
+                    style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:60px; height:2px; background:#fbbf24; box-shadow:0 1px 2px black;">
+                </div>
+                <div
+                    style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:2px; height:8px; background:#fbbf24; box-shadow:0 1px 2px black;">
+                </div>
+                <div
+                    style="position:absolute; top:50%; left:50%; width:6px; height:6px; background:#fbbf24; border-radius:50%; transform:translate(-50%, -50%); box-shadow:0 1px 2px black;">
+                </div>
 
-                <div id="ai-container"
-                    style="width:120px; height:120px; background:#000; border-radius:50%; border:3px solid #475569; position:absolute; bottom:10px; right:10px; overflow:hidden; box-shadow:0 0 20px rgba(0,0,0,0.8); z-index:10;">
+                <!-- Bank Scale (Fixed on Top) -->
+                <div style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;">
+                    <div
+                        style="position:absolute; top:4px; left:50%; transform:translateX(-50%); width:2px; height:5px; background:white;">
+                    </div> <!-- 0 -->
+                    <div
+                        style="position:absolute; top:5px; left:35%; transform:rotate(-30deg); width:2px; height:5px; background:white;">
+                    </div> <!-- 30L -->
+                    <div
+                        style="position:absolute; top:5px; right:35%; transform:rotate(30deg); width:2px; height:5px; background:white;">
+                    </div> <!-- 30R -->
+                </div>
+            </div>
+        </div>
+    </div>
 
-                    <!-- ROTATING HORIZON (Handles ROLL) -->
-                    <div id="ai-horizon"
-                        style="width:100%; height:100%; position:absolute; top:0; left:0; transform-origin:center;">
+    <!-- AUTONOMOUS SEQUENCER WIDGET -->
+    <div class="widget" id="widget_auto">
+        <div class="widget-header">
+            <h3>🧩 Autonomous Sequencer</h3>
+            <div class="widget-controls">
+                <button class="widget-btn" onclick="toggleMaximize(this)">⛶</button>
+            </div>
+        </div>
+        <div class="widget-content">
+            <!-- Controls -->
+            <div style="display:flex; gap:5px; margin-bottom:10px; flex-wrap:wrap;">
+                <button onclick="addCommand('MOVE_FORWARD')" style="font-size:12px; padding:6px;">⬆ Fwd</button>
+                <button onclick="addCommand('TURN_LEFT')" style="font-size:12px; padding:6px;">⬅ Left</button>
+                <button onclick="addCommand('TURN_RIGHT')" style="font-size:12px; padding:6px;">➡ Right</button>
+                <button onclick="addCommand('SHOOT')" style="font-size:12px; padding:6px; background:#ef4444;">🎯
+                    Shoot</button>
+                <button onclick="addCommand('WAIT')" style="font-size:12px; padding:6px; background:#6366f1;">⏳
+                    Wait</button>
+            </div>
+            <div style="display:flex; gap:5px; margin-bottom:15px; flex-wrap:wrap;">
+                <button onclick="addCommand('WAIT_US_LESS')" style="font-size:10px; padding:4px; background:#0ea5e9;">📏
+                    Wait < Dist</button>
+                        <button onclick="addCommand('WAIT_US_MORE')"
+                            style="font-size:10px; padding:4px; background:#0ea5e9;">📏 Wait > Dist</button>
+            </div>
 
-                        <!-- PITCH PLANE (Handles PITCH) -->
-                        <div id="ai-pitch-plane"
-                            style="position:absolute; top:-50%; left:-50%; width:200%; height:200%; background:linear-gradient(to bottom, #0099cc 50%, #8b4513 50%);">
-                            <!-- Pitch Ladder -->
-                            <div
-                                style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:60px; text-align:center; opacity:0.8;">
-                                <!-- +20 -->
-                                <div style="height:1px; background:white; margin:15px auto; width:15px;"></div>
-                                <!-- +10 -->
-                                <div style="height:1px; background:white; margin:15px auto; width:25px;"></div>
-                                <!-- Horizon -->
-                                <div style="height:2px; background:white; margin:15px auto; width:80px;"></div>
-                                <!-- -10 -->
-                                <div style="height:1px; background:white; margin:15px auto; width:25px;"></div>
-                                <!-- -20 -->
-                                <div style="height:1px; background:white; margin:15px auto; width:15px;"></div>
+            <!-- Sequence List -->
+            <div id="autoSequenceList"
+                style="background:#0f172a; min-height:150px; padding:10px; border-radius:5px; margin-bottom:10px; max-height:250px; overflow-y:auto;">
+                <div style="color:#64748b; text-align:center; padding:20px;">No commands added</div>
+            </div>
+
+            <!-- Execution Controls -->
+            <button id="btnRunAuto" onclick="runSequence()" style="width:100%; background:#22c55e;">▶ Run
+                Sequence</button>
+        </div>
+    </div>
+
+    <!-- METRICS WIDGET -->
+    <div class="widget" id="widget_metrics">
+        <div class="widget-header">
+            <h3>📊 Robot Metrics</h3>
+            <div class="widget-controls">
+                <button class="widget-btn" onclick="toggleMaximize(this)">⛶</button>
+            </div>
+        </div>
+        <div class="widget-content">
+            <!-- STATUS INDICATORS -->
+            <div
+                style="display:flex; justify-content:space-around; margin-bottom:15px; background:#0b1220; padding:10px; border-radius:8px;">
+                <div id="indBall" style="text-align:center; color:#ef4444;">
+                    <div style="font-size:20px;">⬤</div>
+                    <div style="font-size:12px;">Ball Found</div>
+                </div>
+                <div id="indMag" style="text-align:center; color:#ef4444;">
+                    <div style="font-size:20px;">⬤</div>
+                    <div style="font-size:12px;">Mag Loaded</div>
+                </div>
+                <div id="indReady" style="text-align:center; color:#ef4444;">
+                    <div style="font-size:20px;">⬤</div>
+                    <div style="font-size:12px;">Ready Shoot</div>
+                </div>
+                <div id="indLocked" style="text-align:center; color:#ef4444;">
+                    <div style="font-size:20px;">⬤</div>
+                    <div style="font-size:12px;">Target Locked</div>
+                </div>
+            </div>
+
+
+
+            <!-- LINE SENSORS -->
+
+            <!-- LINE SENSORS -->
+            <div style="margin-bottom:15px; background:#0b1220; padding:10px; border-radius:8px; text-align:center;">
+                <div style="font-size:12px; color:#94a3b8; margin-bottom:5px;">LINE SENSORS</div>
+                <div style="display:flex; justify-content:center; gap:8px;">
+                    <div id="line_0" class="line-sensor"
+                        style="width:12px; height:12px; border-radius:50%; background:#ef4444;"></div>
+                    <div id="line_1" class="line-sensor"
+                        style="width:12px; height:12px; border-radius:50%; background:#ef4444;"></div>
+                    <div id="line_2" class="line-sensor"
+                        style="width:12px; height:12px; border-radius:50%; background:#ef4444;"></div>
+                    <div id="line_3" class="line-sensor"
+                        style="width:12px; height:12px; border-radius:50%; background:#ef4444;"></div>
+                    <div id="line_4" class="line-sensor"
+                        style="width:12px; height:12px; border-radius:50%; background:#ef4444;"></div>
+                    <div id="line_5" class="line-sensor"
+                        style="width:12px; height:12px; border-radius:50%; background:#ef4444;"></div>
+                    <div id="line_6" class="line-sensor"
+                        style="width:12px; height:12px; border-radius:50%; background:#ef4444;"></div>
+                    <div id="line_7" class="line-sensor"
+                        style="width:12px; height:12px; border-radius:50%; background:#ef4444;"></div>
+                </div>
+            </div>
+
+            <!-- ULTRASONIC SENSORS -->
+            <div style="margin-bottom:15px; background:#0b1220; padding:10px; border-radius:8px; text-align:center;">
+                <div style="font-size:12px; color:#94a3b8; margin-bottom:10px;">ULTRASONIC SENSORS</div>
+                <div style="display:flex; justify-content:space-around; align-items:flex-end; height:80px;">
+
+                    <!-- Sensor 1 -->
+                    <div style="text-align:center; width:30%;">
+                        <div
+                            style="width:16px; height:50px; background:#1e293b; margin:0 auto; position:relative; border-radius:3px; overflow:hidden;">
+                            <div id="us_bar_0"
+                                style="width:100%; height:0%; background:#22d3ee; position:absolute; bottom:0; transition: height 0.2s;">
                             </div>
                         </div>
+                        <div id="us_val_0" style="font-size:12px; color:#22d3ee; margin-top:4px;">0cm</div>
+                        <div style="font-size:10px; color:#94a3b8;">LEFT</div>
+                    </div>
 
-                        <!-- Bank Pointer (Rotates with Horizon) -->
+                    <!-- Sensor 2 -->
+                    <div style="text-align:center; width:30%;">
                         <div
-                            style="position:absolute; top:10px; left:50%; transform:translateX(-50%); width:0; height:0; border-left:5px solid transparent; border-right:5px solid transparent; border-bottom:8px solid white;">
-                        </div>
-                    </div>
-
-                    <!-- FIXED BEZEL ELEMENTS (HUD) -->
-                    <!-- Center Wings (Aircraft Reference) -->
-                    <div
-                        style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:60px; height:2px; background:#fbbf24; box-shadow:0 1px 2px black;">
-                    </div>
-                    <div
-                        style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); width:2px; height:8px; background:#fbbf24; box-shadow:0 1px 2px black;">
-                    </div>
-                    <div
-                        style="position:absolute; top:50%; left:50%; width:6px; height:6px; background:#fbbf24; border-radius:50%; transform:translate(-50%, -50%); box-shadow:0 1px 2px black;">
-                    </div>
-
-                    <!-- Bank Scale (Fixed on Top) -->
-                    <div style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;">
-                        <div
-                            style="position:absolute; top:4px; left:50%; transform:translateX(-50%); width:2px; height:5px; background:white;">
-                        </div> <!-- 0 -->
-                        <div
-                            style="position:absolute; top:5px; left:35%; transform:rotate(-30deg); width:2px; height:5px; background:white;">
-                        </div> <!-- 30L -->
-                        <div
-                            style="position:absolute; top:5px; right:35%; transform:rotate(30deg); width:2px; height:5px; background:white;">
-                        </div> <!-- 30R -->
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- AUTONOMOUS SEQUENCER WIDGET -->
-        <div class="widget" id="widget_auto">
-            <div class="widget-header">
-                <h3>🧩 Autonomous Sequencer</h3>
-                <div class="widget-controls">
-                    <button class="widget-btn" onclick="toggleMaximize(this)">⛶</button>
-                </div>
-            </div>
-            <div class="widget-content">
-                <!-- Controls -->
-                <div style="display:flex; gap:5px; margin-bottom:10px; flex-wrap:wrap;">
-                    <button onclick="addCommand('MOVE_FORWARD')" style="font-size:12px; padding:6px;">⬆ Fwd</button>
-                    <button onclick="addCommand('TURN_LEFT')" style="font-size:12px; padding:6px;">⬅ Left</button>
-                    <button onclick="addCommand('TURN_RIGHT')" style="font-size:12px; padding:6px;">➡ Right</button>
-                    <button onclick="addCommand('SHOOT')" style="font-size:12px; padding:6px; background:#ef4444;">🎯
-                        Shoot</button>
-                    <button onclick="addCommand('WAIT')" style="font-size:12px; padding:6px; background:#6366f1;">⏳
-                        Wait</button>
-                </div>
-                <div style="display:flex; gap:5px; margin-bottom:15px; flex-wrap:wrap;">
-                    <button onclick="addCommand('WAIT_US_LESS')"
-                        style="font-size:10px; padding:4px; background:#0ea5e9;">📏 Wait < Dist</button>
-                            <button onclick="addCommand('WAIT_US_MORE')"
-                                style="font-size:10px; padding:4px; background:#0ea5e9;">📏 Wait > Dist</button>
-                </div>
-
-                <!-- Sequence List -->
-                <div id="autoSequenceList"
-                    style="background:#0f172a; min-height:150px; padding:10px; border-radius:5px; margin-bottom:10px; max-height:250px; overflow-y:auto;">
-                    <div style="color:#64748b; text-align:center; padding:20px;">No commands added</div>
-                </div>
-
-                <!-- Execution Controls -->
-                <button id="btnRunAuto" onclick="runSequence()" style="width:100%; background:#22c55e;">▶ Run
-                    Sequence</button>
-            </div>
-        </div>
-
-        <!-- METRICS WIDGET -->
-        <div class="widget" id="widget_metrics">
-            <div class="widget-header">
-                <h3>📊 Robot Metrics</h3>
-                <div class="widget-controls">
-                    <button class="widget-btn" onclick="toggleMaximize(this)">⛶</button>
-                </div>
-            </div>
-            <div class="widget-content">
-                <!-- STATUS INDICATORS -->
-                <div
-                    style="display:flex; justify-content:space-around; margin-bottom:15px; background:#0b1220; padding:10px; border-radius:8px;">
-                    <div id="indBall" style="text-align:center; color:#ef4444;">
-                        <div style="font-size:20px;">⬤</div>
-                        <div style="font-size:12px;">Ball Found</div>
-                    </div>
-                    <div id="indMag" style="text-align:center; color:#ef4444;">
-                        <div style="font-size:20px;">⬤</div>
-                        <div style="font-size:12px;">Mag Loaded</div>
-                    </div>
-                    <div id="indReady" style="text-align:center; color:#ef4444;">
-                        <div style="font-size:20px;">⬤</div>
-                        <div style="font-size:12px;">Ready Shoot</div>
-                    </div>
-                    <div id="indLocked" style="text-align:center; color:#ef4444;">
-                        <div style="font-size:20px;">⬤</div>
-                        <div style="font-size:12px;">Target Locked</div>
-                    </div>
-                </div>
-
-
-
-                <!-- LINE SENSORS -->
-
-                <!-- LINE SENSORS -->
-                <div
-                    style="margin-bottom:15px; background:#0b1220; padding:10px; border-radius:8px; text-align:center;">
-                    <div style="font-size:12px; color:#94a3b8; margin-bottom:5px;">LINE SENSORS</div>
-                    <div style="display:flex; justify-content:center; gap:8px;">
-                        <div id="line_0" class="line-sensor"
-                            style="width:12px; height:12px; border-radius:50%; background:#ef4444;"></div>
-                        <div id="line_1" class="line-sensor"
-                            style="width:12px; height:12px; border-radius:50%; background:#ef4444;"></div>
-                        <div id="line_2" class="line-sensor"
-                            style="width:12px; height:12px; border-radius:50%; background:#ef4444;"></div>
-                        <div id="line_3" class="line-sensor"
-                            style="width:12px; height:12px; border-radius:50%; background:#ef4444;"></div>
-                        <div id="line_4" class="line-sensor"
-                            style="width:12px; height:12px; border-radius:50%; background:#ef4444;"></div>
-                        <div id="line_5" class="line-sensor"
-                            style="width:12px; height:12px; border-radius:50%; background:#ef4444;"></div>
-                        <div id="line_6" class="line-sensor"
-                            style="width:12px; height:12px; border-radius:50%; background:#ef4444;"></div>
-                        <div id="line_7" class="line-sensor"
-                            style="width:12px; height:12px; border-radius:50%; background:#ef4444;"></div>
-                    </div>
-                </div>
-
-                <!-- ULTRASONIC SENSORS -->
-                <div
-                    style="margin-bottom:15px; background:#0b1220; padding:10px; border-radius:8px; text-align:center;">
-                    <div style="font-size:12px; color:#94a3b8; margin-bottom:10px;">ULTRASONIC SENSORS</div>
-                    <div style="display:flex; justify-content:space-around; align-items:flex-end; height:80px;">
-
-                        <!-- Sensor 1 -->
-                        <div style="text-align:center; width:30%;">
-                            <div
-                                style="width:16px; height:50px; background:#1e293b; margin:0 auto; position:relative; border-radius:3px; overflow:hidden;">
-                                <div id="us_bar_0"
-                                    style="width:100%; height:0%; background:#22d3ee; position:absolute; bottom:0; transition: height 0.2s;">
-                                </div>
+                            style="width:16px; height:50px; background:#1e293b; margin:0 auto; position:relative; border-radius:3px; overflow:hidden;">
+                            <div id="us_bar_1"
+                                style="width:100%; height:0%; background:#22d3ee; position:absolute; bottom:0; transition: height 0.2s;">
                             </div>
-                            <div id="us_val_0" style="font-size:12px; color:#22d3ee; margin-top:4px;">0cm</div>
-                            <div style="font-size:10px; color:#94a3b8;">LEFT</div>
                         </div>
+                        <div id="us_val_1" style="font-size:12px; color:#22d3ee; margin-top:4px;">0cm</div>
+                        <div style="font-size:10px; color:#94a3b8;">CENTER</div>
+                    </div>
 
-                        <!-- Sensor 2 -->
-                        <div style="text-align:center; width:30%;">
-                            <div
-                                style="width:16px; height:50px; background:#1e293b; margin:0 auto; position:relative; border-radius:3px; overflow:hidden;">
-                                <div id="us_bar_1"
-                                    style="width:100%; height:0%; background:#22d3ee; position:absolute; bottom:0; transition: height 0.2s;">
-                                </div>
+                    <!-- Sensor 3 -->
+                    <div style="text-align:center; width:30%;">
+                        <div
+                            style="width:16px; height:50px; background:#1e293b; margin:0 auto; position:relative; border-radius:3px; overflow:hidden;">
+                            <div id="us_bar_2"
+                                style="width:100%; height:0%; background:#22d3ee; position:absolute; bottom:0; transition: height 0.2s;">
                             </div>
-                            <div id="us_val_1" style="font-size:12px; color:#22d3ee; margin-top:4px;">0cm</div>
-                            <div style="font-size:10px; color:#94a3b8;">CENTER</div>
                         </div>
+                        <div id="us_val_2" style="font-size:12px; color:#22d3ee; margin-top:4px;">0cm</div>
+                        <div style="font-size:10px; color:#94a3b8;">RIGHT</div>
+                    </div>
+                </div>
+            </div>
 
-                        <!-- Sensor 3 -->
-                        <div style="text-align:center; width:30%;">
-                            <div
-                                style="width:16px; height:50px; background:#1e293b; margin:0 auto; position:relative; border-radius:3px; overflow:hidden;">
-                                <div id="us_bar_2"
-                                    style="width:100%; height:0%; background:#22d3ee; position:absolute; bottom:0; transition: height 0.2s;">
-                                </div>
-                            </div>
-                            <div id="us_val_2" style="font-size:12px; color:#22d3ee; margin-top:4px;">0cm</div>
-                            <div style="font-size:10px; color:#94a3b8;">RIGHT</div>
-                        </div>
+            <!-- DIAGNOSTICS CHARTS COMBINED -->
+            <div class="chart-grid">
+                <!-- NEW DIAGNOSTICS -->
+                <div class="chart-wrapper-container">
+                    <div class="chart-header">
+                        <span>Fan</span> <span id="val_fanSpeed" style="color:#22d3ee">OFF</span>
+                    </div>
+                    <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="fanSpeedChart"></canvas></div>
+                </div>
+                <div class="chart-wrapper-container">
+                    <div class="chart-header">
+                        <span>Core0</span> <span id="val_core0Temp" style="color:#22d3ee">0°C</span>
+                    </div>
+                    <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="core0TempChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-wrapper-container">
+                    <div class="chart-header">
+                        <span>Core1</span> <span id="val_core1Temp" style="color:#22d3ee">0°C</span>
+                    </div>
+                    <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="core1TempChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-wrapper-container">
+                    <div class="chart-header">
+                        <span>MotA</span> <span id="val_motorATemp" style="color:#22d3ee">0°C</span>
+                    </div>
+                    <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="motorATempChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-wrapper-container">
+                    <div class="chart-header">
+                        <span>MotB</span> <span id="val_motorBTemp" style="color:#22d3ee">0°C</span>
+                    </div>
+                    <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="motorBTempChart"></canvas>
                     </div>
                 </div>
 
-                <!-- DIAGNOSTICS CHARTS COMBINED -->
-                <div class="chart-grid">
-                    <!-- NEW DIAGNOSTICS -->
-                    <div class="chart-wrapper-container">
-                        <div class="chart-header">
-                            <span>Fan</span> <span id="val_fanSpeed" style="color:#22d3ee">OFF</span>
-                        </div>
-                        <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="fanSpeedChart"></canvas></div>
+                <!-- EXISTING METRICS -->
+                <div class="chart-wrapper-container">
+                    <div class="chart-header">
+                        <span>Bat</span> <span id="val_batteryChart" style="color:#22d3ee">0%</span>
                     </div>
-                    <div class="chart-wrapper-container">
-                        <div class="chart-header">
-                            <span>Core0</span> <span id="val_core0Temp" style="color:#22d3ee">0°C</span>
-                        </div>
-                        <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="core0TempChart"></canvas>
-                        </div>
+                    <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="batteryChart"></canvas></div>
+                </div>
+                <div class="chart-wrapper-container">
+                    <div class="chart-header">
+                        <span>Temp</span> <span id="val_tempChart" style="color:#22d3ee">0°C</span>
                     </div>
-                    <div class="chart-wrapper-container">
-                        <div class="chart-header">
-                            <span>Core1</span> <span id="val_core1Temp" style="color:#22d3ee">0°C</span>
-                        </div>
-                        <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="core1TempChart"></canvas>
-                        </div>
+                    <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="tempChart"></canvas></div>
+                </div>
+                <div class="chart-wrapper-container">
+                    <div class="chart-header">
+                        <span>Spd</span> <span id="val_speedChart" style="color:#22d3ee">0</span>
                     </div>
-                    <div class="chart-wrapper-container">
-                        <div class="chart-header">
-                            <span>MotA</span> <span id="val_motorATemp" style="color:#22d3ee">0°C</span>
-                        </div>
-                        <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="motorATempChart"></canvas>
-                        </div>
+                    <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="speedChart"></canvas></div>
+                </div>
+                <div class="chart-wrapper-container">
+                    <div class="chart-header">
+                        <span>Sig</span> <span id="val_signalChart" style="color:#22d3ee">0dB</span>
                     </div>
-                    <div class="chart-wrapper-container">
-                        <div class="chart-header">
-                            <span>MotB</span> <span id="val_motorBTemp" style="color:#22d3ee">0°C</span>
-                        </div>
-                        <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="motorBTempChart"></canvas>
-                        </div>
+                    <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="signalChart"></canvas></div>
+                </div>
+                <div class="chart-wrapper-container">
+                    <div class="chart-header">
+                        <span>Ping</span> <span id="val_pingChart" style="color:#22d3ee">0ms</span>
                     </div>
-
-                    <!-- EXISTING METRICS -->
-                    <div class="chart-wrapper-container">
-                        <div class="chart-header">
-                            <span>Bat</span> <span id="val_batteryChart" style="color:#22d3ee">0%</span>
-                        </div>
-                        <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="batteryChart"></canvas></div>
-                    </div>
-                    <div class="chart-wrapper-container">
-                        <div class="chart-header">
-                            <span>Temp</span> <span id="val_tempChart" style="color:#22d3ee">0°C</span>
-                        </div>
-                        <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="tempChart"></canvas></div>
-                    </div>
-                    <div class="chart-wrapper-container">
-                        <div class="chart-header">
-                            <span>Spd</span> <span id="val_speedChart" style="color:#22d3ee">0</span>
-                        </div>
-                        <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="speedChart"></canvas></div>
-                    </div>
-                    <div class="chart-wrapper-container">
-                        <div class="chart-header">
-                            <span>Sig</span> <span id="val_signalChart" style="color:#22d3ee">0dB</span>
-                        </div>
-                        <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="signalChart"></canvas></div>
-                    </div>
-                    <div class="chart-wrapper-container">
-                        <div class="chart-header">
-                            <span>Ping</span> <span id="val_pingChart" style="color:#22d3ee">0ms</span>
-                        </div>
-                        <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="pingChart"></canvas></div>
-                    </div>
+                    <div class="chart-wrapper" onclick="toggleZoom(this)"><canvas id="pingChart"></canvas></div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- ROBOT INFO WIDGET -->
-        <div class="widget" id="widget_info" style="display:none;">
-            <div class="widget-header">
-                <h3>ℹ Robot Specs</h3>
-                <div class="widget-controls">
-                    <button class="widget-btn" onclick="toggleMaximize(this)">⛶</button>
-                </div>
-            </div>
-            <div class="widget-content" style="padding:15px; font-size:13px; line-height:1.6; color:#e2e8f0;">
-
-                <div style="margin-bottom:15px; border-bottom:1px solid #334155; padding-bottom:10px;">
-                    <h4 style="color:#22d3ee; margin:0 0 5px 0;">🧠 Processing Unit</h4>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>Microcontroller:</span> <span style="color:#94a3b8">ESP32-WROOM-32 (DevKit V1)</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>Architecture:</span> <span style="color:#94a3b8">Dual Core Xtensa® 32-bit LX6</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>Clock Speed:</span> <span style="color:#94a3b8">Up to 240 MHz</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>Memory:</span> <span style="color:#94a3b8">520 KB SRAM / 4 MB Flash</span>
-                    </div>
-                </div>
-
-                <div style="margin-bottom:15px; border-bottom:1px solid #334155; padding-bottom:10px;">
-                    <h4 style="color:#a855f7; margin:0 0 5px 0;">🔌 Power System</h4>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>Battery:</span> <span style="color:#94a3b8">3S LiPo (11.1V - 12.6V)</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>Voltage Reg:</span> <span style="color:#94a3b8">LM2596 (Buck Converter 5V 3A)</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>Motor Driver:</span> <span style="color:#94a3b8">2x L298N (Dual H-Bridge)</span>
-                    </div>
-                </div>
-
-                <div style="margin-bottom:15px; border-bottom:1px solid #334155; padding-bottom:10px;">
-                    <h4 style="color:#ef4444; margin:0 0 5px 0;">⚙ Actuators</h4>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>Drive Motors:</span> <span style="color:#94a3b8">4x TT DC Gear Motors (1:48)</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>Shooter:</span> <span style="color:#94a3b8">2x High-RPM DC Motors (Flywheel)</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>Turret:</span> <span style="color:#94a3b8">1x MG996R Servo (Pitch Control)</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>Cooling:</span> <span style="color:#94a3b8">1x 12V DC Fan (Active Cooling)</span>
-                    </div>
-                </div>
-
-                <div>
-                    <h4 style="color:#fbbf24; margin:0 0 5px 0;">📡 Sensors & Vision</h4>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>Camera:</span> <span style="color:#94a3b8">OV2640 (2 Megapixel)</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>IMU (Gyro/Acc):</span> <span style="color:#94a3b8">MPU6050 (6-Axis I2C)</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>Line Sensors:</span> <span style="color:#94a3b8">8-Channel IR Array (TCRT5000)</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between;">
-                        <span>Distance:</span> <span style="color:#94a3b8">3x HC-SR04 Ultrasonic</span>
-                    </div>
-                </div>
-
+    <!-- ROBOT INFO WIDGET -->
+    <div class="widget" id="widget_info" style="display:none;">
+        <div class="widget-header">
+            <h3>ℹ Robot Specs</h3>
+            <div class="widget-controls">
+                <button class="widget-btn" onclick="toggleMaximize(this)">⛶</button>
             </div>
         </div>
+        <div class="widget-content" style="padding:15px; font-size:13px; line-height:1.6; color:#e2e8f0;">
+
+            <div style="margin-bottom:15px; border-bottom:1px solid #334155; padding-bottom:10px;">
+                <h4 style="color:#22d3ee; margin:0 0 5px 0;">🧠 Processing Unit</h4>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Microcontroller:</span> <span style="color:#94a3b8">ESP32-WROOM-32 (DevKit V1)</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Architecture:</span> <span style="color:#94a3b8">Dual Core Xtensa® 32-bit LX6</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Clock Speed:</span> <span style="color:#94a3b8">Up to 240 MHz</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Memory:</span> <span style="color:#94a3b8">520 KB SRAM / 4 MB Flash</span>
+                </div>
+            </div>
+
+            <div style="margin-bottom:15px; border-bottom:1px solid #334155; padding-bottom:10px;">
+                <h4 style="color:#a855f7; margin:0 0 5px 0;">🔌 Power System</h4>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Battery:</span> <span style="color:#94a3b8">3S LiPo (11.1V - 12.6V)</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Voltage Reg:</span> <span style="color:#94a3b8">LM2596 (Buck Converter 5V 3A)</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Motor Driver:</span> <span style="color:#94a3b8">2x L298N (Dual H-Bridge)</span>
+                </div>
+            </div>
+
+            <div style="margin-bottom:15px; border-bottom:1px solid #334155; padding-bottom:10px;">
+                <h4 style="color:#ef4444; margin:0 0 5px 0;">⚙ Actuators</h4>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Drive Motors:</span> <span style="color:#94a3b8">4x TT DC Gear Motors (1:48)</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Shooter:</span> <span style="color:#94a3b8">2x High-RPM DC Motors (Flywheel)</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Turret:</span> <span style="color:#94a3b8">1x MG996R Servo (Pitch Control)</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Cooling:</span> <span style="color:#94a3b8">1x 12V DC Fan (Active Cooling)</span>
+                </div>
+            </div>
+
+            <div>
+                <h4 style="color:#fbbf24; margin:0 0 5px 0;">📡 Sensors & Vision</h4>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Camera:</span> <span style="color:#94a3b8">OV2640 (2 Megapixel)</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>IMU (Gyro/Acc):</span> <span style="color:#94a3b8">MPU6050 (6-Axis I2C)</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Line Sensors:</span> <span style="color:#94a3b8">8-Channel IR Array (TCRT5000)</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span>Distance:</span> <span style="color:#94a3b8">3x HC-SR04 Ultrasonic</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
 
     </div>
 

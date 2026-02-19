@@ -10,7 +10,8 @@ const WIDGET_MAP = {
     'widget_term_sys': '🖥 System Log',
     'widget_camera': '📷 Camera',
     'widget_info': 'ℹ Robot Specs',
-    'widget_custom': '➕ Custom Cmd'
+    'widget_custom': '➕ Custom Cmd',
+    'widget_buzzer': '🎹 Audio Synth'
 };
 
 document.addEventListener('DOMContentLoaded', () => {
