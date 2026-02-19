@@ -54,14 +54,17 @@ header {
 }
 
 /* DASHBOARD STYLES (GCS GRID) */
+/* DASHBOARD STYLES (GCS GRID) */
 .container {
     display: grid;
-    /* 4 Columns: Left(350), Mid-Left(1fr), Mid-Right(1fr), Right(350) */
-    grid-template-columns: 350px 1fr 1fr 350px;
-    grid-template-rows: 1fr 1fr;
-    gap: 15px;
-    padding: 15px;
-    height: 100vh;
+    /* 4 Columns: Equal Width */
+    grid-template-columns: repeat(4, 1fr);
+    /* Rows rely on remaining height */
+    grid-template-rows: 40% 1fr;
+    gap: 10px;
+    padding: 10px;
+    height: calc(100vh - 90px);
+    /* Subtract Header Height */
     box-sizing: border-box;
     overflow: hidden;
     grid-template-areas:
@@ -95,9 +98,11 @@ header {
     grid-area: logs;
 }
 
-#widget_custom {
+#widget_custom,
+#widget_chat,
+#widget_buzzer {
     display: none;
-    /* Hidden for now or could be a tab in Ops */
+    /* Hidden by default, accessible via Panel Switcher */
 }
 
 #widget_camera {
@@ -130,11 +135,7 @@ header {
    And squeeze Custom into Ops or below Ops.
    Let's modify container rows to be flexible.
 */
-.container {
-    grid-template-rows: auto 1fr;
-    /* Top row auto height? No, we want fixed viewport. */
-    grid-template-rows: 40% 60%;
-}
+/* .container override removed to prevent conflicts */
 
 .widget-header {
     background: rgba(15, 23, 42, 0.9);
