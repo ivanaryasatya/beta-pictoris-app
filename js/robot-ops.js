@@ -87,20 +87,32 @@ function renderKeySettings() {
 // ===== ROBOT OPS =====
 
 
-function updateSpeed(type, val) {
+// Update display only (for continuous slider movement)
+function updateSpeedDisplay(type, val) {
     if (type === 'MOTOR') {
         document.getElementById('valMotor').innerText = val;
-        sendCommand('SPEED:' + val);
     } else if (type === 'SHOOT') {
         document.getElementById('valShoot').innerText = val;
-        sendCommand('P_SPEED:' + val);
     } else if (type === 'ANGLE') {
         const el = document.getElementById('angleDisplay');
         if (el) el.innerText = val + '°';
+    } else if (type === 'FAN') {
+        document.getElementById('valFan').innerText = val;
+    }
+}
+
+function updateSpeed(type, val) {
+    // Update display first to ensure sync
+    updateSpeedDisplay(type, val);
+
+    if (type === 'MOTOR') {
+        sendCommand('SPEED:' + val);
+    } else if (type === 'SHOOT') {
+        sendCommand('P_SPEED:' + val);
+    } else if (type === 'ANGLE') {
         document.getElementById('shotAngle').value = val;
         sendCommand('ANGLE:' + val);
     } else if (type === 'FAN') {
-        document.getElementById('valFan').innerText = val;
         sendCommand('FAN:' + val);
     }
 }

@@ -69,7 +69,25 @@ function startDummyMode() {
 function stopDummyMode() {
     console.log("Stopping Dummy Data Simulation...");
     if (dummyInterval) clearInterval(dummyInterval);
-    logToTerminal("[SYSTEM] Switched to REAL DATA MODE");
+
+    // Clear Charts
+    const charts = ['batteryChart', 'tempChart', 'speedChart', 'signalChart', 'pingChart', 'fanSpeedChart', 'core0TempChart', 'core1TempChart', 'motorATempChart', 'motorBTempChart'];
+    charts.forEach(id => {
+        if (window[id] && window[id].data) {
+            window[id].data.datasets[0].data = [];
+            window[id].data.labels = [];
+            window[id].update();
+        }
+    });
+
+    // Reset Text Values
+    const texts = ['val_batteryChart', 'val_tempChart', 'val_speedChart', 'val_signalChart', 'val_pingChart', 'val_core0Temp', 'val_core1Temp'];
+    texts.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = "-";
+    });
+
+    logToTerminal("[SYSTEM] Switched to REAL DATA MODE. Waiting for telemetry...");
 }
 
 // Helper for Charts (Assumes charts.js structure)
