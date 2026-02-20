@@ -473,6 +473,24 @@
             </div>
         </div>
 
+        <!-- TEXT STORAGE WIDGET -->
+        <div class="widget" id="widget_text" style="display:none;">
+            <div class="widget-header">
+                <h3>📁 Text Storage</h3>
+                <div class="widget-controls">
+                    <button class="widget-btn" onclick="openNewTextModal()" title="New File"
+                        style="color:#22c55e; font-weight:bold;">➕</button>
+                    <button class="widget-btn" onclick="toggleMaximize(this)">⛶</button>
+                </div>
+            </div>
+            <div class="widget-content" style="display:flex; flex-direction:column; padding:10px;">
+                <div id="textStorageList" style="flex:1; overflow-y:auto; padding-right:5px;">
+                    <!-- Items injected via JS -->
+                    <div style="color:#64748b; text-align:center; padding:20px; font-size:12px;">Loading...</div>
+                </div>
+            </div>
+        </div>
+
         <!-- CHAT WIDGET -->
         <div class="widget" id="widget_chat">
             <div class="widget-header">
@@ -1050,6 +1068,7 @@
 
     <!-- Custom Scripts -->
     <script src="js/protocol-map.js?v=2"></script>
+    <script src="js/text-storage.js"></script>
     <script src="js/communication.js"></script>
     <script src="js/robot-ops.js"></script>
     <script src="js/autonomous.js"></script>

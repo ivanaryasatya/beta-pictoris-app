@@ -120,6 +120,7 @@ function connectComm() {
                 isConnected = true;
                 updateConnectionUI(type, details, true);
                 logBackend("WiFi Connected: " + validIP);
+                sendCommand(`CONNECT:wifi,${validIP}`);
             };
 
             socket.onmessage = function (event) {
@@ -200,6 +201,28 @@ function connectComm() {
         // SIMULATION FOR OTHER TYPES
         isConnected = true;
         updateConnectionUI(type, details, true);
+
+        // Extract details for logging
+        let extra = "";
+        if (type === "bt_classic") {
+            let name = document.getElementById("bt_name").value || "ESP32-Robot";
+            let mac = document.getElementById("bt_mac").value || "00:00:00";
+            extra = `,${name},${mac}`;
+        } else if (type === "bt_le") {
+            let name = document.getElementById("ble_name").value || "BLE-Robot";
+            let srv = document.getElementById("ble_service").value || "UUID";
+            extra = `,${name},${srv}`;
+        } else if (type === "esp_now") {
+            let peer = document.getElementById("esp_peer").value || "FF:FF";
+            let chan = document.getElementById("esp_chan").value || "1";
+            extra = `,${peer},${chan}`;
+        } else if (type === "radio") {
+            let freq = document.getElementById("radio_freq").value || "433";
+            let addr = document.getElementById("radio_addr").value || "0xF0F0";
+            extra = `,${freq},${addr}`;
+        }
+
+        sendCommand(`CONNECT:${type}${extra}`);
         sendCommand(`SYSTEM: Simulated Connected via ${type}`);
     }
 }
@@ -255,7 +278,9 @@ async function connectSerial(baudRate) {
         isConnected = true;
         isSerialClosing = false;
         updateConnectionUI("serial", [`Baud: ${baudRate}`], true);
+        updateConnectionUI("serial", [`Baud: ${baudRate}`], true);
         logBackend("Serial Connected");
+        sendCommand(`CONNECT:serial,${baudRate}`);
 
         // Setup Read Loop
         const textDecoder = new TextDecoderStream();
@@ -338,6 +363,7 @@ async function disconnectComm() {
 
     // Disconnect WebSocket
     if (socket) {
+        sendCommand("DISCONNECT:1"); // Send disconnect signal before closing
         socket.close();
         socket = null;
     }

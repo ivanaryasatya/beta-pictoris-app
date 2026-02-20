@@ -10,14 +10,19 @@ let keyBindings = {
     "REFILL": { key: "r", label: "Refill" },
     "LOCK_TARGET": { key: "l", label: "Lock Target" },
     "ROTATE_MAG_L": { key: "q", label: "Rotate Mag L" },
-    "ROTATE_MAG_R": { key: "e", label: "Rotate Mag R" }
+    "ROTATE_MAG_R": { key: "e", label: "Rotate Mag R" },
+    "MOD_MOTOR": { key: "m", label: "Mod: Motor Speed (+ 0-9)" },
+    "MOD_POWER": { key: "p", label: "Mod: Shooter Power (+ 0-9)" },
+    "MOD_ANGLE": { key: "a", label: "Mod: Elevation (+ 0-9)" },
+    "MOD_FAN": { key: "f", label: "Mod: Fan Speed (+ 0-9)" }
 };
 
 let isRemapping = null; // Stores action being remapped
+let pressedKeys = {}; // Track pressed keys to prevent flooding
 
 document.addEventListener('keydown', function (e) {
     // Ignore if in input/select
-    if (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "SELECT") return;
+    if (document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "SELECT" || document.activeElement.tagName === "TEXTAREA") return;
 
     if (isRemapping) {
         // Remap Logic
@@ -28,13 +33,63 @@ document.addEventListener('keydown', function (e) {
         return;
     }
 
+    if (pressedKeys[e.key]) return; // Ignore if key is already pressed
+
+    // Slider Shortcuts (Modifier + 0-9)
+    if (e.key >= '0' && e.key <= '9') {
+        let digit = parseInt(e.key);
+        // Normalized 0 to 1
+        let ratio = digit / 9.0;
+
+        // Check Modifiers (Check if the key associated with MOD is currently pressed)
+        if (pressedKeys[keyBindings["MOD_MOTOR"].key]) {
+            let val = Math.round(ratio * 255);
+            updateSpeed('MOTOR', val);
+            e.preventDefault(); return;
+        }
+        if (pressedKeys[keyBindings["MOD_POWER"].key]) {
+            let val = Math.round(ratio * 255);
+            updateSpeed('SHOOT', val);
+            e.preventDefault(); return;
+        }
+        if (pressedKeys[keyBindings["MOD_ANGLE"].key]) {
+            let val = Math.round(ratio * 45); // Max angle 45
+            updateSpeed('ANGLE', val);
+            e.preventDefault(); return;
+        }
+        if (pressedKeys[keyBindings["MOD_FAN"].key]) {
+            let val = Math.round(ratio * 255);
+            updateSpeed('FAN', val);
+            e.preventDefault(); return;
+        }
+    }
+
     // Command Logic
     for (let action in keyBindings) {
         if (keyBindings[action].key === e.key) {
+            // If it's a modifier key, we just mark it as pressed (handled by pressedKeys logic above)
+            // But we don't send a command for modifiers themselves unless they map to an action.
+            // The MOD_* keys don't map to a direct sendCommand, so we can skip them or let them fall through.
+            // However, MOD keys are in keyBindings.
+            // If we sendCommand("MOD_MOTOR"), it might do nothing or error if not handled.
+            // Let's filter out MOD_ keys from sending commands.
+            if (action.startsWith("MOD_")) {
+                pressedKeys[e.key] = true;
+                e.preventDefault();
+                return;
+            }
+
             e.preventDefault();
+            pressedKeys[e.key] = true; // Mark key as pressed
             sendCommand(action);
             return;
         }
+    }
+});
+
+document.addEventListener('keyup', function (e) {
+    if (pressedKeys[e.key]) {
+        pressedKeys[e.key] = false; // Reset key state
     }
 });
 
