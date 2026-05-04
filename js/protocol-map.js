@@ -181,66 +181,89 @@ window.saveProtocolEditor = function () {
 
             // Fetch current queue once
             queueRef.once('value').then(snapshot => {
-                const currentQueueJson = snapshot.val();
-                let queue = [];
-                try {
-                    queue = currentQueueJson ? JSON.parse(currentQueueJson) : [];
-                } catch (e) {
-                    console.warn("Error parsing queue for migration:", e);
-                    queue = [];
-                }
+                const currentData = snapshot.val();
 
-                if (Array.isArray(queue) && queue.length > 0) {
-                    console.log("[MIGRATION] Checking " + queue.length + " commands...");
-                    let updatedQueue = [];
+                if (typeof currentData === 'string' && currentData.length > 0) {
+                    console.log("[MIGRATION] Checking binary commands...");
+
                     // Use OLD map to decode
                     let oldToCmd = window.PROTOCOL_MAP.toCmd || {};
+                    let updatedQueueStr = "";
 
-                    queue.forEach(item => {
-                        // item format: [CODE, STATUS]
-                        if (!Array.isArray(item) || item.length < 1) {
-                            updatedQueue.push(item);
-                            return;
-                        }
+                    let i = 0;
+                    while (i < currentData.length) {
+                        if (currentData[i] === '#') {
+                            // Find the next length byte. 
+                            // Because CMD could be multiple chars, we need to try to parse correctly.
+                            // However, we can guess CMD length by iterating up to 4 characters.
+                            let found = false;
 
-                        let oldFullCode = item[0];
-                        let status = item[1];
+                            // Trying cmd lengths from 1 to 4:
+                            for (let cmdLen = 1; cmdLen <= 4; cmdLen++) {
+                                let lenIndex = i + 1 + cmdLen;
+                                if (lenIndex < currentData.length) {
+                                    let packetLen = currentData.charCodeAt(lenIndex);
+                                    if (packetLen >= 4 && i + packetLen <= currentData.length) {
+                                        let candidate = currentData.substr(i, packetLen);
+                                        // verify CRC
+                                        let testCrc = 0;
+                                        for (let k = 0; k < candidate.length - 1; k++) {
+                                            testCrc ^= candidate.charCodeAt(k);
+                                        }
+                                        if (String.fromCharCode(testCrc) === candidate[candidate.length - 1]) {
+                                            // Valid packet found
+                                            let oldBaseCode = candidate.substr(1, cmdLen);
+                                            let dataPart = candidate.substring(lenIndex + 1, candidate.length - 1);
 
-                        // Handle parameters "CODE:VAL"
-                        let parts = oldFullCode.split(':');
-                        let baseCode = parts[0];
-                        let param = parts.length > 1 ? parts.slice(1).join(':') : null;
+                                            // Translate to new base code
+                                            let commandKey = oldToCmd[oldBaseCode];
+                                            if (commandKey) {
+                                                let newBaseCode = newMapData[commandKey];
+                                                if (newBaseCode) {
+                                                    // Reconstruct new packet
+                                                    let newTotalLen = 1 + newBaseCode.length + 1 + dataPart.length + 1;
+                                                    let newLenChar = String.fromCharCode(newTotalLen);
+                                                    let newPacketWithoutCrc = "#" + newBaseCode + newLenChar + dataPart;
 
-                        let commandKey = oldToCmd[baseCode];
+                                                    let newCrc = 0;
+                                                    for (let k = 0; k < newPacketWithoutCrc.length; k++) {
+                                                        newCrc ^= newPacketWithoutCrc.charCodeAt(k);
+                                                    }
+                                                    let newCrcChar = String.fromCharCode(newCrc);
+                                                    updatedQueueStr += newPacketWithoutCrc + newCrcChar;
 
-                        if (commandKey) {
-                            // Found the Command Key (e.g. "WAIT")
-                            // Get NEW code from newMapData
-                            let newBaseCode = newMapData[commandKey];
+                                                    if (oldBaseCode !== newBaseCode) {
+                                                        console.log(`[MIGRATION] ${commandKey}: ${oldBaseCode} -> ${newBaseCode}`);
+                                                    }
+                                                } else {
+                                                    // Retain old packet if no new mapping found
+                                                    updatedQueueStr += candidate;
+                                                }
+                                            } else {
+                                                // Keep as is if unknown
+                                                updatedQueueStr += candidate;
+                                            }
 
-                            if (newBaseCode) {
-                                // Reconstruct with new code
-                                let newFullCode = newBaseCode;
-                                if (param !== null) newFullCode += ":" + param;
-
-                                if (oldFullCode !== newFullCode) {
-                                    console.log(`[MIGRATION] ${commandKey}: ${oldFullCode} -> ${newFullCode}`);
+                                            i += packetLen;
+                                            found = true;
+                                            break;
+                                        }
+                                    }
                                 }
-                                updatedQueue.push([newFullCode, status]);
-                            } else {
-                                // Command might have been removed from map, keep old
-                                updatedQueue.push(item);
                             }
-                        } else {
-                            // Unknown code, keep as is
-                            updatedQueue.push(item);
+                            if (found) continue;
                         }
-                    });
+                        // Fallback: character is not start of valid packet or parsing failed
+                        if (i < 0) break; // sanity check
+                        i++;
+                    }
 
                     // Update Queue in Firebase
-                    queueRef.set(JSON.stringify(updatedQueue))
-                        .then(() => console.log("Queue Update Complete"))
-                        .catch(e => console.error("Queue Update Failed", e));
+                    if (updatedQueueStr.length > 0) {
+                        queueRef.set(updatedQueueStr)
+                            .then(() => console.log("Queue Update Complete"))
+                            .catch(e => console.error("Queue Update Failed", e));
+                    }
                 }
 
                 // Proceed to save map

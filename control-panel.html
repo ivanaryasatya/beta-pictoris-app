@@ -13,6 +13,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <!-- Custom Config -->
     <script src="js/firebase-config.js"></script>
@@ -308,7 +309,7 @@
                             <input type="range" orient="vertical" min="0" max="45" value="0"
                                 oninput="document.getElementById('angleDisplay').innerText=this.value + '°'"
                                 onchange="updateSpeed('ANGLE', this.value)"
-                                style="-webkit-appearance: slider-vertical; width: 8px; height: 100%;">
+                                style="-webkit-appearance: slider-vertical; appearance: slider-vertical; width: 8px; height: 100%;">
                         </div>
                         <span id="angleDisplay"
                             style="font-size:14px; margin-top:5px; font-weight:bold; color:#38bdf8;">0°</span>
@@ -322,7 +323,7 @@
                             <input type="range" orient="vertical" min="0" max="255" value="200"
                                 oninput="document.getElementById('valShoot').innerText=this.value"
                                 onchange="updateSpeed('SHOOT', this.value)"
-                                style="-webkit-appearance: slider-vertical; width: 8px; height: 100%;">
+                                style="-webkit-appearance: slider-vertical; appearance: slider-vertical; width: 8px; height: 100%;">
                         </div>
                         <span id="valShoot" style="font-size:14px; margin-top:5px;">200</span>
                     </div>
@@ -515,21 +516,41 @@
             </div>
         </div>
 
-        <!-- SYSTEM LOG WIDGET (Consolidated) -->
+        <!-- SERIAL TERMINAL WIDGET -->
         <div class="widget" id="widget_term_sys">
             <div class="widget-header">
-                <h3>🖥 System Log</h3>
+                <h3>🖥 Serial Terminal</h3>
                 <div class="widget-controls" style="display:flex; align-items:center; gap:10px;">
                     <label style="margin:0; cursor:pointer; color:var(--text-secondary); font-size:10px;">
                         <input type="checkbox" id="autoScrollLogs" checked style="width:auto; margin:0 4px 0 0;">
                         Auto-scroll
                     </label>
+                    <button class="widget-btn" title="Clear Terminal" onclick="clearTerminal()" style="color:#ef4444; font-size:11px;">🗑</button>
                     <button class="widget-btn" onclick="toggleMaximize(this)">⛶</button>
                 </div>
             </div>
-            <div class="widget-content">
+            <div class="widget-content" style="display:flex; flex-direction:column; padding:0; overflow:hidden;">
+                <!-- Terminal Output Area -->
                 <div id="terminal"
-                    style="background:#0f172a; height:100%; overflow-y:auto; padding:5px; font-family:monospace; font-size:12px;">
+                    style="background:#0b1120; flex:1; overflow-y:auto; padding:8px 10px; font-family:'Cascadia Code','Fira Code','Courier New',monospace; font-size:12px; line-height:1.6; color:#e2e8f0; scroll-behavior:smooth;">
+                    <span style="color:#475569; font-size:11px;">━━━ Serial Terminal Ready ━━━</span><br>
+                </div>
+                <!-- Terminal Input Bar -->
+                <div id="terminalInputBar" style="display:flex; align-items:center; background:#0f172a; border-top:1px solid #1e3a5f; padding:5px 8px; gap:6px;">
+                    <span style="color:#22d3ee; font-family:monospace; font-size:13px; font-weight:bold; user-select:none;">›</span>
+                    <input id="terminalInput"
+                        type="text"
+                        placeholder="Type command and press Enter..."
+                        autocomplete="off"
+                        spellcheck="false"
+                        style="flex:1; background:transparent; border:none; outline:none; color:#f1f5f9; font-family:'Cascadia Code','Fira Code','Courier New',monospace; font-size:12px; padding:2px 0;"
+                        onkeydown="handleTerminalKey(event)">
+                    <button id="terminalSendBtn"
+                        onclick="sendTerminalInput()"
+                        title="Send (Enter)"
+                        style="background:linear-gradient(135deg,#06b6d4,#3b82f6); border:none; color:white; padding:4px 12px; border-radius:4px; cursor:pointer; font-size:12px; font-weight:600; transition:opacity 0.2s; white-space:nowrap;">
+                        ➤ Send
+                    </button>
                 </div>
             </div>
         </div>
@@ -1067,9 +1088,9 @@
     </div>
 
     <!-- Custom Scripts -->
-    <script src="js/protocol-map.js?v=2"></script>
+    <script src="js/protocol-map.js?v=3"></script>
     <script src="js/text-storage.js"></script>
-    <script src="js/communication.js"></script>
+    <script src="js/communication.js?v=3"></script>
     <script src="js/robot-ops.js"></script>
     <script src="js/autonomous.js"></script>
     <script src="js/charts.js"></script>

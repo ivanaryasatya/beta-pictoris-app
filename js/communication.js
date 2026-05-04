@@ -125,6 +125,11 @@ function connectComm() {
 
             socket.onmessage = function (event) {
                 flashRx(); // Visual Indicator
+
+                // Always show raw data in terminal
+                const rawData = event.data.trim();
+                if (rawData && typeof logRx === 'function') logRx(rawData);
+
                 try {
                     const msg = JSON.parse(event.data);
 
@@ -151,7 +156,7 @@ function connectComm() {
                             if (msg.ball !== undefined) updateIndicator("indBall", msg.ball);
                             if (msg.mag !== undefined) updateIndicator("indMag", msg.mag);
                             if (msg.ready !== undefined) updateIndicator("indReady", msg.ready);
-                            if (msg.locked !== undefined) updateIndicator("indLocked", msg.locked); // New
+                            if (msg.locked !== undefined) updateIndicator("indLocked", msg.locked);
                         }
                         // Line Sensors
                         if (window.updateLineSensors && msg.line) {
@@ -164,11 +169,10 @@ function connectComm() {
                             updateUltrasonic(msg.us);
                         }
                     } else if (msg.type === "log") {
-                        logBackend(msg.data);
+                        logBackend("[LOG] " + msg.data);
                     }
                 } catch (e) {
-                    // Plain text fallback
-                    logBackend("RX: " + event.data);
+                    // Plain text — already shown via logRx above
                 }
             };
 
@@ -327,9 +331,15 @@ function handleSerialData(data) {
     window.serialBuffer = lines.pop();
 
     lines.forEach(line => {
-        if (!line.trim()) return;
+        const trimmed = line.trim();
+        if (!trimmed) return;
+
+        // Always display raw data in terminal
+        if (typeof logRx === 'function') logRx(trimmed);
+
+        // Route structured JSON to telemetry handlers
         try {
-            const msg = JSON.parse(line);
+            const msg = JSON.parse(trimmed);
             if (msg.type === "imu" && window.updateIMU) updateIMU(msg.roll, msg.pitch, msg.yaw);
             else if (msg.type === "telemetry") {
                 if (window.updateChart) {
@@ -346,11 +356,29 @@ function handleSerialData(data) {
                     if (msg.mota) updateChart('motorATempChart', msg.mota);
                     if (msg.motb) updateChart('motorBTempChart', msg.motb);
                 }
+                // Indicators
+                if (window.updateIndicator) {
+                    if (msg.ball !== undefined) updateIndicator("indBall", msg.ball);
+                    if (msg.mag !== undefined) updateIndicator("indMag", msg.mag);
+                    if (msg.ready !== undefined) updateIndicator("indReady", msg.ready);
+                    if (msg.locked !== undefined) updateIndicator("indLocked", msg.locked);
+                }
+                // Line Sensors
+                if (window.updateLineSensors && msg.line) {
+                    window.robotState.line = msg.line;
+                    updateLineSensors(msg.line);
+                }
+                // Ultrasonic Sensors
+                if (window.updateUltrasonic && msg.us) {
+                    window.robotState.us = msg.us;
+                    updateUltrasonic(msg.us);
+                }
+            } else if (msg.type === "log") {
+                // log-type messages are already shown via logRx above; also send to logBackend
+                logBackend("[LOG] " + msg.data);
             }
-            else if (msg.type === "log") logBackend(msg.data);
-            else logBackend("RX: " + line);
         } catch (e) {
-            logBackend("RX: " + line.trim());
+            // Plain text — already shown via logRx above
         }
     });
 }
@@ -413,40 +441,93 @@ window.sendCommandToFirebase = function (fullCmd) {
         return; // Only send mapped commands
     }
 
-    let finalCode = code;
-    if (val !== undefined && val !== null && val !== 1) { // 1 is default flag
-        finalCode = `${code}:${val}`;
+    // Format new binary command: [HEADER][CMD][LEN][DATA][CRC]
+    let header = "#";
+    let cmdPart = String(code);
+    let dataPart = (val !== undefined && val !== null && val !== 1) ? String(val) : "";
+
+    let totalLen = 1 + cmdPart.length + 1 + dataPart.length + 1;
+    let lenChar = String.fromCharCode(totalLen);
+
+    let packetWithoutCrc = header + cmdPart + lenChar + dataPart;
+
+    let crc = 0;
+    for (let i = 0; i < packetWithoutCrc.length; i++) {
+        crc ^= packetWithoutCrc.charCodeAt(i); // 8-bit XOR checksum
     }
+    let crcChar = String.fromCharCode(crc);
+    let finalBinaryCmd = packetWithoutCrc + crcChar;
 
     const cmdRef = database.ref('/controlPanel/command');
 
     cmdRef.transaction((currentString) => {
-        let currentData;
-        try {
-            // Attempt to parse existing string, or default to empty array
-            currentData = JSON.parse(currentString || "[]");
-        } catch (e) {
-            currentData = [];
+        let currentData = currentString || "";
+
+        // Migrate from old JSON format if applicable
+        if (typeof currentData === "string" && currentData.trim().startsWith("[")) {
+            try {
+                JSON.parse(currentData);
+                currentData = ""; // Clear old JSON
+            } catch (e) { }
+        }
+        if (typeof currentData !== "string") {
+            currentData = "";
         }
 
-        if (!Array.isArray(currentData)) currentData = [];
+        // Add new command
+        currentData += finalBinaryCmd;
 
-        // Add new command [Code, Status]
-        // Status "0" = Pending
-        currentData.push([finalCode, "0"]);
+        // Parse existing commands to keep max 50 commands
+        let commands = [];
+        let i = 0;
+
+        while (i < currentData.length) {
+            if (currentData[i] === '#') {
+                // Safely assume CMD length based on total packet size.
+                // We'll trust the LEN character which is after CMD.
+                // Protocol map commands are usually 2 chars, so LEN is at i + 3.
+                // We'll search for a valid length byte if possible, but assuming 2 chars cmd is standard here.
+                let cmdLen = cmdPart.length; // Use the length of commands we generate
+                let lenIndex = i + 1 + cmdLen;
+                if (lenIndex < currentData.length) {
+                    let packetLen = currentData.charCodeAt(lenIndex);
+                    if (packetLen >= 4 && i + packetLen <= currentData.length) { // 4 is minimum possible length
+                        let candidate = currentData.substr(i, packetLen);
+                        // Optional: verify CRC just to be sure it's a valid packet
+                        let testCrc = 0;
+                        for (let k = 0; k < candidate.length - 1; k++) {
+                            testCrc ^= candidate.charCodeAt(k);
+                        }
+                        if (String.fromCharCode(testCrc) === candidate[candidate.length - 1]) {
+                            commands.push(candidate);
+                            i += packetLen;
+                            continue;
+                        }
+                    }
+                }
+            }
+            // Byte by byte fallback
+            // If parser couldn't validate, just skip and maybe find next valid '#'
+            i++;
+        }
+
+        // Add to commands list if parsing somehow missed the newly appended command (fallback)
+        if (commands.length === 0 && finalBinaryCmd.length > 0) {
+            commands.push(finalBinaryCmd);
+        }
 
         // Keep max 50
-        while (currentData.length > 50) currentData.shift();
+        while (commands.length > 50) commands.shift();
 
-        // Return as String
-        return JSON.stringify(currentData);
+        // Return as concatenated String
+        return commands.join("");
     }, (error, committed, snapshot) => {
         if (error) {
             console.error('Firebase Transaction failed abnormally!', error);
         } else if (!committed) {
             console.warn('Firebase Transaction aborted (likely conflict).');
         } else {
-            console.log('[DEBUG] Command queued to Firebase:', finalCode);
+            console.log('[DEBUG] Command queued to Firebase (Binary Format):', finalBinaryCmd);
         }
     });
 }

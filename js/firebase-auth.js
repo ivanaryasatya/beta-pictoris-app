@@ -1,13 +1,14 @@
 /**
- * REBUILT FIREBASE AUTH SYSTEM v2
- * Handles: User Identification, Admin Login, System Lockdown, Network Panel
+ * REBUILT FIREBASE AUTH SYSTEM v3 (FIRESTORE)
+ * Handles: Google Auth, Firestore Sync, Admin Approval, Lockdown
  */
 
-console.log("[AUTH] Script Loaded v2");
+console.log("[AUTH] Script Loaded v3 (Firestore)");
 
 // Global State
 let currentUser = null;
-let currentUserRole = 'guest'; // 'guest', 'user', 'admin'
+let currentUserData = null;
+let db = firebase.firestore();
 let isSystemLocked = false;
 let autoAcceptEnabled = false;
 
@@ -16,7 +17,7 @@ const UI = {
     // Main Auth
     modal: null,
     input: null,
-    btnRequest: null,
+    btnGoogle: null,
     error: null,
     btnAdmin: null,
     btnLock: null,
@@ -51,8 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 1. Capture Elements
     try {
         UI.modal = document.getElementById('authModal');
-        UI.input = document.getElementById('usernameInput');
-        UI.btnRequest = document.getElementById('btnRequestAccess');
+        UI.btnGoogle = document.getElementById('btnGoogleLogin');
         UI.error = document.getElementById('authError');
         UI.btnAdmin = document.getElementById('btnShowAdmin');
         UI.btnLock = document.getElementById('btnShowLockdown');
@@ -89,233 +89,78 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initAuthSystem(isLanding, isControlPanel) {
-    // Bind Events
-    if (UI.btnRequest) UI.btnRequest.addEventListener('click', () => handleRequestAccess(isLanding));
-    if (UI.input) {
-        UI.input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') handleRequestAccess(isLanding);
-        });
-    }
-
+    // Bind Google Login
+    if (UI.btnGoogle) UI.btnGoogle.addEventListener('click', () => handleGoogleLogin());
+    
+    const btnEnter = document.getElementById('btnEnterApp');
+    if (btnEnter) btnEnter.addEventListener('click', () => handleGoogleLogin());
+    
     if (UI.btnAdmin) UI.btnAdmin.addEventListener('click', showAdminLogin);
     if (UI.btnLock) UI.btnLock.addEventListener('click', () => showLockdownModal(true));
 
-    // Landing Page Enter Button
-    const btnEnter = document.getElementById('btnEnterApp');
-    if (btnEnter) {
-        btnEnter.addEventListener('click', () => {
-            // If we already have a session? handled in checkSession UI update
-            if (currentUser) {
-                window.location.href = 'control-panel.html';
-            } else {
-                showMainModal();
-            }
-        });
-    }
-
-    // Initialize/Sync Logic (Lockdown, AutoApprove)
-    database.ref('config/is_locked').on('value', (snap) => {
-        isSystemLocked = (snap.val() === true);
-        if (isControlPanel) updateLockdownState(isSystemLocked);
-    });
-
-    database.ref('config/auto_approve').on('value', (snap) => {
-        autoAcceptEnabled = (snap.val() === true);
-        if (UI.chkAutoAccept) UI.chkAutoAccept.checked = autoAcceptEnabled;
-    });
-
-    // Check Local Storage
-    const storedUser = localStorage.getItem('pictoris_username');
-    if (storedUser) {
-        console.log("[AUTH] Found stored session:", storedUser);
-        checkSession(storedUser, isLanding, isControlPanel);
-    } else {
-        if (isControlPanel) {
-            console.warn("[AUTH] No session on Control Panel. Redirecting.");
-            window.location.href = 'index.html';
+    // Monitor Auth State
+    firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+            currentUser = user;
+            syncUserWithFirestore(user, isLanding, isControlPanel);
         } else {
-            console.log("[AUTH] Landing Page - Guest");
+            if (isControlPanel) window.location.href = 'index.html';
         }
-    }
-}
+    });
 
-// ========================
-// USER FLOW
-// ========================
-
-function handleRequestAccess(redirectAfter = false) {
-    console.log("[AUTH] handling request...");
-    const username = UI.input.value.trim();
-
-    if (!username) {
-        UI.error.innerText = "Please enter a username.";
-        return;
-    }
-    // ... validations ...
-    if (username.length < 3) { UI.error.innerText = "Too short"; return; }
-    if (!/^[a-zA-Z0-9-_]+$/.test(username)) { UI.error.innerText = "Invalid chars"; return; }
-
-    // UI Feedback
-    UI.btnRequest.disabled = true;
-    UI.btnRequest.innerText = "Verifying...";
-    UI.error.innerText = "";
-
-    // Store if we need to redirect
-    UI.redirectOnSuccess = redirectAfter;
-
-    // 1. Check if user exists
-    database.ref('usernames/' + username).once('value')
-        .then(snapshot => {
-            if (snapshot.exists()) {
-                console.log("[AUTH] User exists. Checking status...");
-                // Just update status (re-login)
-                updateUserStatus(username, false);
-            } else {
-                console.log("[AUTH] New user. Registering...");
-                registerNewUser(username);
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            UI.error.innerText = "Network Error. Try again.";
-            resetMainBtn();
-        });
-}
-
-function registerNewUser(username) {
-    const userData = {
-        username: username,
-        role: 'user',
-        approved: false, // Wait for admin
-        connectedAt: firebase.database.ServerValue.TIMESTAMP
-    };
-
-    database.ref('usernames/' + username).set(userData)
-        .then(() => {
-            console.log("[AUTH] User registered.");
-            startSessionMonitoring(username);
-        })
-        .catch(err => {
-            UI.error.innerText = "Reg Error: " + err.message;
-            resetMainBtn();
-        });
-}
-
-function updateUserStatus(username, approved) {
-    database.ref('usernames/' + username).update({
-        connectedAt: firebase.database.ServerValue.TIMESTAMP
-    }).then(() => {
-        startSessionMonitoring(username);
+    // Global Config Listeners
+    db.collection('config').doc('system').onSnapshot(doc => {
+        if (doc.exists()) {
+            const data = doc.data();
+            isSystemLocked = data.isLocked || false;
+            autoAcceptEnabled = data.autoApprove || false;
+            if (isControlPanel) updateLockdownState(isSystemLocked);
+            if (UI.chkAutoAccept) UI.chkAutoAccept.checked = autoAcceptEnabled;
+        }
     });
 }
 
-function checkSession(username, isLanding, isControlPanel) {
-    database.ref('usernames/' + username).once('value')
-        .then(snap => {
-            if (snap.exists()) {
-                const data = snap.val();
-                currentUserRole = data.role || 'user';
+function handleGoogleLogin() {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    firebase.auth().signInWithPopup(provider).catch(err => {
+        if (UI.error) UI.error.innerText = err.message;
+    });
+}
 
-                // If on Landing Page, Update Button to "Continue" and Redirect on Click
+function syncUserWithFirestore(user, isLanding, isControlPanel) {
+    const userRef = db.collection('users').doc(user.uid);
+    
+    userRef.onSnapshot(doc => {
+        if (!doc.exists()) {
+            // New User Registration
+            const newUser = {
+                uid: user.uid,
+                displayName: user.displayName,
+                email: user.email,
+                photoURL: user.photoURL,
+                role: 'user',
+                approved: autoAcceptEnabled, // Auto approve if enabled
+                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            userRef.set(newUser);
+        } else {
+            const data = doc.data();
+            currentUserData = data;
+
+            if (data.approved || data.role === 'admin') {
                 if (isLanding) {
-                    const btn = document.getElementById('btnEnterApp');
-                    const info = document.getElementById('sessionInfo');
-
-                    if (btn) {
-                        btn.innerHTML = `<span>🚀</span> CONTINUE AS ${username.toUpperCase()}`;
-                        // Clone to remove existing listeners (showMainModal), then add redirect
-                        const newBtn = btn.cloneNode(true);
-                        btn.parentNode.replaceChild(newBtn, btn);
-                        newBtn.addEventListener('click', () => window.location.href = 'control-panel.html');
-
-                        // Auto-redirect if they just arrived? No, let them choose.
-                        // But user wants "always login". If they have session, maybe auto-redirect?
-                        // "buat supaya user dan admin selalu masuk ke home page dulu" -> They want Landing first.
-                        // So button click is fine.
-                    }
-                    if (info) info.innerText = `Role: ${currentUserRole}`;
-
-                    currentUser = { name: username };
-                    return;
+                    window.location.href = 'control-panel.html';
+                } else {
+                    renderProfile(data.displayName, data.role);
+                    if (UI.modal) UI.modal.style.display = 'none';
                 }
-
-                if (isControlPanel) {
-                    startSessionMonitoring(username);
-                }
-
             } else {
-                // Invalid session
-                localStorage.removeItem('pictoris_username');
-                if (isControlPanel) window.location.href = 'index.html';
-            }
-        });
-}
-
-function startSessionMonitoring(username) {
-    // Set Local
-    currentUser = { name: username };
-    localStorage.setItem('pictoris_username', username);
-
-    // Listen for changes (Approval/Kick)
-    database.ref('usernames/' + username + '/approved').on('value', snap => {
-        const isApproved = snap.val();
-
-        console.log(`[AUTH] Approval Status for ${username}: ${isApproved}`);
-
-        if (isApproved === true || currentUserRole === 'admin') {
-            // Success
-            loginSuccess(username);
-        } else {
-            // Pending or Kicked
-            if (UI.btnRequest) {
-                UI.btnRequest.innerText = "Waiting for Admin Approval...";
-                UI.btnRequest.disabled = true;
-            }
-            if (UI.modal && UI.modal.style.display === 'none') {
-                // If we were logged in and got kicked
                 showMainModal();
-                UI.error.innerText = "Access Revoked by Admin.";
+                if (UI.error) UI.error.innerText = "Waiting for Admin Approval...";
+                if (UI.btnGoogle) UI.btnGoogle.disabled = true;
             }
         }
     });
-
-    // ADMIN ONLY: Listen for new users to Auto-Approve
-    if (currentUserRole === 'admin') {
-        startAutoApprover();
-    }
-}
-
-function startAutoApprover() {
-    console.log("[ADMIN] Starting Auto-Approver Listener");
-    database.ref('usernames').on('child_added', snapshot => {
-        if (autoAcceptEnabled) {
-            const u = snapshot.val();
-            if (u && u.approved === false) {
-                console.log(`[ADMIN] Auto-approving: ${u.username}`);
-                database.ref('usernames/' + u.username).update({ approved: true });
-            }
-        }
-    });
-}
-
-function loginSuccess(username) {
-    console.log("[AUTH] Login Success!");
-    if (UI.modal) UI.modal.style.display = 'none';
-
-    // CHECK FOR LANDING PAGE REDIRECT
-    if (document.getElementById('btnEnterApp')) {
-        console.log("[AUTH] Landing Page detected. Redirecting to Control Panel...");
-        window.location.href = 'control-panel.html';
-        return;
-    }
-
-    // Render Header Profile (if on control panel)
-    renderProfile(username, currentUserRole);
-}
-
-function resetMainBtn() {
-    UI.btnRequest.disabled = false;
-    UI.btnRequest.innerText = "Request Access";
 }
 
 // ========================
@@ -336,31 +181,16 @@ window.closeAdminLogin = function () {
 
 window.handleAdminLogin = function () {
     const password = UI.adminInput.value;
-    database.ref('config/admin_password').once('value').then(snap => {
-        if (String(snap.val()) === password) {
+    db.collection('config').doc('admin').get().then(doc => {
+        if (doc.exists() && doc.data().password === password) {
             // Admin Success
-            createAdminSession();
+            db.collection('users').doc(currentUser.uid).update({ role: 'admin', approved: true });
+            UI.adminModal.style.display = 'none';
         } else {
             UI.adminError.innerText = "Invalid Password";
         }
     });
 };
-
-function createAdminSession() {
-    const adminName = "Admin_Console";
-    currentUserRole = 'admin';
-
-    // Auto-approve admin
-    database.ref('usernames/' + adminName).update({
-        username: adminName,
-        role: 'admin',
-        approved: true,
-        connectedAt: firebase.database.ServerValue.TIMESTAMP
-    }).then(() => {
-        UI.adminModal.style.display = 'none';
-        startSessionMonitoring(adminName);
-    });
-}
 
 // ========================
 // LOCKDOWN FLOW
@@ -390,38 +220,25 @@ window.closeLockdownModal = function () {
 
 window.handleLockdownConfirm = function () {
     const code = UI.lockdownInput.value;
-    database.ref('config/lockdown_code').once('value').then(snap => {
-        if (String(snap.val()) === code) {
-            // Code Correct
-            const reason = UI.lockdownReason ? UI.lockdownReason.value : "";
-
-            // Set Lock
-            database.ref().update({
-                "config/is_locked": true,
-                "config/lockdown_reason": reason
+    db.collection('config').doc('system').get().then(doc => {
+        if (doc.exists() && doc.data().lockdownCode === code) {
+            db.collection('config').doc('system').update({
+                isLocked: true,
+                lockdownReason: UI.lockdownReason.value || ""
             });
-
             UI.lockdownModal.style.display = 'none';
-        } else {
-            UI.lockdownError.innerText = "Invalid Code";
-        }
+        } else UI.lockdownError.innerText = "Invalid Code";
     });
 };
 
 function updateLockdownState(locked) {
     if (locked) {
         UI.overlay.style.display = 'flex';
-        // Get Reason
-        database.ref('config/lockdown_reason').once('value').then(s => {
-            const r = s.val();
-            document.getElementById('lockdownReasonDisplay').innerText = r || "";
+        db.collection('config').doc('system').get().then(doc => {
+            document.getElementById('lockdownReasonDisplay').innerText = doc.data().lockdownReason || "";
         });
-
-        // Hide others
-        if (UI.modal) UI.modal.style.display = 'none';
     } else {
         UI.overlay.style.display = 'none';
-        if (!currentUser) showMainModal();
     }
 }
 
@@ -431,12 +248,79 @@ function updateLockdownState(locked) {
 
 function showMainModal() {
     if (UI.modal) UI.modal.style.display = 'flex';
-    if (UI.input) UI.input.focus();
-    resetMainBtn();
 }
 
 function renderProfile(name, role) {
     const container = document.getElementById('userProfile');
+    if (!container) return;
+
+    const color = role === 'admin' ? "facc15" : "22c55e";
+    const avatar = currentUser.photoURL || `https://ui-avatars.com/api/?name=${name}&background=${color}&color=000&bold=true`;
+
+    const panelBtnLabel = role === 'admin' ? "Admin Controls" : "Users Online";
+    const panelBtnColor = role === 'admin' ? "#f59e0b" : "#3b82f6";
+
+    container.innerHTML = `
+        <div style="text-align:right; margin-right:5px;">
+            <div style="color:white; font-weight:bold; font-size:14px;">${name}</div>
+            <div style="color:#${color}; font-size:10px;">${role.toUpperCase()}</div>
+        </div>
+        <img src="${avatar}" style="width:36px; height:36px; border-radius:50%; border:2px solid #${color};">
+        
+        <button onclick="openNetworkPanel()" style="background:${panelBtnColor}; border:none; border-radius:4px; margin-left:10px; padding:5px 10px; font-weight:bold; cursor:pointer; color:white;">
+            ${panelBtnLabel}
+        </button>
+
+        <button onclick="logout()" style="background:#ef4444; color:white; border:none; padding:5px 8px; border-radius:4px; margin-left:5px; cursor:pointer;">Exit</button>
+    `;
+}
+
+window.logout = function () {
+    firebase.auth().signOut().then(() => location.reload());
+};
+
+// ========================
+// NETWORK PANEL (Firestore)
+// ========================
+
+window.openNetworkPanel = function () {
+    if (UI.networkModal) {
+        UI.networkModal.style.display = 'flex';
+        loadUsersList();
+        UI.adminControls.style.display = (currentUserData.role === 'admin') ? 'block' : 'none';
+    }
+};
+
+function loadUsersList() {
+    db.collection('users').orderBy('displayName').onSnapshot(snap => {
+        UI.userList.innerHTML = "";
+        let count = 0;
+        snap.forEach(doc => {
+            count++;
+            const u = doc.data();
+            const div = document.createElement('div');
+            const isMe = u.uid === currentUser.uid;
+            
+            let buttons = '';
+            if (currentUserData.role === 'admin' && !isMe) {
+                if (!u.approved) buttons += `<button onclick="approve('${u.uid}')" style="background:#22c55e; color:white; border:none; padding:4px 8px; border-radius:4px; margin-right:5px; cursor:pointer;">Accept</button>`;
+                buttons += `<button onclick="kick('${u.uid}')" style="background:#ef4444; color:white; border:none; padding:4px 8px; border-radius:4px; cursor:pointer;">Kick</button>`;
+            }
+
+            div.innerHTML = `
+                <div style="background:#0f172a; padding:10px; margin-bottom:5px; border-radius:5px; display:flex; justify-content:space-between; align-items:center; border-left: 3px solid ${u.approved ? '#22c55e' : '#f59e0b'};">
+                    <div><span style="color:#f8fafc; font-weight:bold;">${u.displayName}</span></div>
+                    <div>${buttons}</div>
+                </div>`;
+            UI.userList.appendChild(div);
+        });
+        UI.userCountBadge.innerText = count;
+    });
+}
+
+window.approve = (uid) => db.collection('users').doc(uid).update({ approved: true });
+window.kick = (uid) => db.collection('users').doc(uid).delete();
+window.toggleAutoAccept = (cb) => db.collection('config').doc('system').update({ autoApprove: cb.checked });
     if (!container) return;
 
     const color = role === 'admin' ? "facc15" : "22c55e";

@@ -22,7 +22,7 @@ function initChat() {
     chatBtn = document.getElementById('chatSendBtn');
     btnClearChat = document.getElementById('btnClearChat');
 
-    if (!chatMessages) return;
+    if (!chatMessages || !db) return;
 
     // Listeners
     if (chatBtn) chatBtn.addEventListener('click', sendChatMessage);
@@ -36,12 +36,12 @@ function initChat() {
     listenToChat();
 
     // Check Role periodically or on init to show Admin controls
-    setInterval(updateChatUI, 2000);
+    updateChatUI();
 }
 
 function updateChatUI() {
-    if (btnClearChat) {
-        if (currentUserRole === 'admin') {
+    if (btnClearChat && currentUserData) {
+        if (currentUserData.role === 'admin') {
             btnClearChat.style.display = 'block';
         } else {
             btnClearChat.style.display = 'none';
@@ -53,40 +53,24 @@ function sendChatMessage() {
     const text = chatInput.value.trim();
     if (!text) return;
 
-    // Ensure we have a user
-    const sender = currentUser ? currentUser.name : "Guest";
-    const role = currentUserRole || 'guest';
-
     const msgData = {
-        sender: sender,
-        role: role,
+        sender: currentUserData.displayName,
+        role: currentUserData.role,
         text: text,
-        timestamp: firebase.database.ServerValue.TIMESTAMP
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
     };
 
-    database.ref('chat/messages').push(msgData).then(() => {
+    db.collection('chat').add(msgData).then(() => {
         chatInput.value = "";
-        // Scroll to bottom handled by listener
-    }).catch(err => {
-        console.error("Chat Error:", err);
-        if (typeof logToTerminal === 'function') logToTerminal("Chat Error: " + err.message);
     });
 }
 
 function listenToChat() {
-    const chatRef = database.ref('chat/messages');
-
-    // Limit to last 50 messages
-    chatRef.limitToLast(50).on('child_added', (snapshot) => {
-        const msg = snapshot.val();
-        renderMessage(msg, snapshot.key);
-    });
-
-    // Handle Deletions
-    chatRef.on('child_removed', (snapshot) => {
-        const key = snapshot.key;
-        const el = document.getElementById(`msg-${key}`);
-        if (el) el.remove();
+    db.collection('chat').orderBy('timestamp', 'desc').limit(50).onSnapshot(snap => {
+        chatMessages.innerHTML = "";
+        let messages = [];
+        snap.forEach(doc => messages.push({id: doc.id, ...doc.data()}));
+        messages.reverse().forEach(msg => renderMessage(msg, msg.id));
     });
 }
 
